@@ -31,7 +31,9 @@
       "@hooks/*": ["./src/hooks/*"],
       "@utils/*": ["./src/utils/*"],
       "@styles/*": ["./src/styles/*"],
-      "@types/*": ["./src/types/*"]
+      "@data/*": ["./src/data/*"],
+      "@config/*": ["./src/config/*"],
+      "@services/*": ["./src/services/*"]
     }
   },
   "include": ["src"]

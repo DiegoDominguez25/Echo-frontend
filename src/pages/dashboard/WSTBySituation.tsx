@@ -1,8 +1,10 @@
+import ResourceManager from "@/components/ResourceManager";
+
 function WSTBySituation() {
   return (
-    <>
-      <h1>hola</h1>
-    </>
+    <div>
+      <ResourceManager userUid="user_001" />
+    </div>
   );
 }
 

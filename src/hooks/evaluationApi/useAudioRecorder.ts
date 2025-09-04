@@ -46,11 +46,39 @@ export const useAudioRecorder = (config: AudioRecorderConfig = {}) => {
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && state.isRecording) {
+      mediaRecorderRef.current.stop();
+    }
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    setTimeout(() => {
+      setState((prev) => {
+        let error = null;
+
+        if (prev.recordingTime < minDuration) {
+          error = `Recording is too short. Minimum duration is ${minDuration} seconds.`;
+        } else if (prev.recordingTime > maxDuration) {
+          error = `Recording is too long. Maximum duration is ${maxDuration} seconds.`;
+        }
+
+        return {
+          ...prev,
+          error,
+        };
+      });
+    }, 100);
+  }, [state.isRecording, minDuration, maxDuration]);
+
   useEffect(() => {
     if (state.recordingTime >= maxDuration && state.isRecording) {
       stopRecording();
     }
-  }, [state.recordingTime, maxDuration, state.isRecording]);
+  }, [state.recordingTime, maxDuration, state.isRecording, stopRecording]);
 
   const startRecording = useCallback(async (): Promise<boolean> => {
     try {
@@ -162,34 +190,6 @@ export const useAudioRecorder = (config: AudioRecorderConfig = {}) => {
       return false;
     }
   }, [state.isSupported, state.audioUrl, mimeType, audioBitsPerSecond]);
-
-  const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && state.isRecording) {
-      mediaRecorderRef.current.stop();
-    }
-
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-
-    setTimeout(() => {
-      setState((prev) => {
-        let error = null;
-
-        if (prev.recordingTime < minDuration) {
-          error = `Recording is too short. Minimum duration is ${minDuration} seconds.`;
-        } else if (prev.recordingTime > maxDuration) {
-          error = `Recording is too long. Maximum duration is ${maxDuration} seconds.`;
-        }
-
-        return {
-          ...prev,
-          error,
-        };
-      });
-    }, 100);
-  }, [state.isRecording, minDuration, maxDuration]);
 
   const pauseRecording = useCallback(() => {
     if (mediaRecorderRef.current && state.isRecording && !state.isPaused) {

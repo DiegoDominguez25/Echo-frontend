@@ -1,9 +1,12 @@
+import Layout from "@/components/layout/Layout";
 import ResourceManager from "@/components/ResourceManager";
 
 function WSTBySituation() {
   return (
     <div>
-      <ResourceManager userUid="user_001" />
+      <Layout>
+        <ResourceManager userUid="user_001" />
+      </Layout>
     </div>
   );
 }

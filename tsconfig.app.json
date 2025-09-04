@@ -33,7 +33,8 @@
       "@styles/*": ["./src/styles/*"],
       "@data/*": ["./src/data/*"],
       "@config/*": ["./src/config/*"],
-      "@services/*": ["./src/services/*"]
+      "@services/*": ["./src/services/*"],
+      "@assets/*": ["./src/assets/*"]
     }
   },
   "include": ["src"]

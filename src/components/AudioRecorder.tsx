@@ -2,6 +2,7 @@ import React from "react";
 import { useAudioRecorder } from "@/hooks/evaluationApi/useAudioRecorder";
 import { useAudioEvaluation } from "@/hooks/evaluationApi/useAudioEvaluation";
 import type { Evaluation } from "@/data/types/UserData";
+import type { AudioAnalysis } from "../data/types/ResourcesData";
 
 interface AudioRecorderProps {
   resourceId: string;
@@ -9,6 +10,7 @@ interface AudioRecorderProps {
   duration?: number;
   referenceText?: string;
   onEvaluationComplete?: (evaluation: Evaluation) => void;
+  referenceAnalysis: AudioAnalysis;
 }
 
 const AudioRecorder: React.FC<AudioRecorderProps> = ({
@@ -16,6 +18,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
   userId,
   duration = 10,
   onEvaluationComplete,
+  referenceAnalysis,
 }) => {
   const audioRecorder = useAudioRecorder({
     duration,
@@ -31,6 +34,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
       audioBlob: audioRecorder.audioBlob,
       resourceId,
       userId,
+      referenceAnalysis,
     });
 
     if (result && onEvaluationComplete) {

@@ -1,8 +1,8 @@
 export const API_CONFIG = {
-  USE_MOCK_API: true,
+  USE_MOCK_API: false,
 
   DATA_API: {
-    BASE_URL: "https://api.example.com/data",
+    BASE_URL: "http://localhost:8001",
     ENDPOINTS: {
       resources: {
         sentences: {
@@ -13,7 +13,7 @@ export const API_CONFIG = {
         words: {
           all: "/resources/words",
           byId: "/resources/words/:id",
-          byCategory: "/resources/words/category/:category",
+          byCategory: "/resources/words/categories/:category",
           byDifficulty: "/resources/words/difficulty/:difficulty",
         },
         texts: {
@@ -26,12 +26,12 @@ export const API_CONFIG = {
   },
 
   USER_API: {
-    BASE_URL: "https://api.example.com",
+    BASE_URL: "http://localhost:8003",
     ENDPOINTS: {
       createAccount: "/users/account",
       createUserApplication: "/users/user_application",
 
-      getUserProgress: "/users/progress/:user_id",
+      getUserProgress: "/users/progress/completed/:user_id",
       getResourceProgress: "/users/progress/:user_id/:resource_uid",
       createOrUpdateEvaluation:
         "/users/progress/evaluation/:user_id/:resource_uid",
@@ -39,11 +39,11 @@ export const API_CONFIG = {
   },
 
   AUDIO_ANALYSIS_API: {
-    BASE_URL: "https://api.echo-audio-analysis.com/v1",
+    BASE_URL: "http://localhost:8000",
     ENDPOINTS: {
-      analyze: "/evaluation/analyze",
-      feedback: "/evaluation/feedback",
-      tips: "/evaluation/tips",
+      analyze: "/evaluation/analyze_audio",
+      feedback: "/evaluation/evaluate_audio",
+      tips: "/evaluation/feedback",
     },
   },
 

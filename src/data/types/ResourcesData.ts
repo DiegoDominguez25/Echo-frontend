@@ -1,4 +1,4 @@
-interface AudioAnalysis {
+export interface AudioAnalysis {
   numberOfSyllables: number;
   numberOfPauses: number;
   speechRate: number;
@@ -10,19 +10,19 @@ interface AudioAnalysis {
 }
 
 export interface Sentences {
-  uid: string;
-  audioUrl: string;
+  id: string;
+  audio_url: string;
   text: string;
   difficulty: string;
   categories: string[];
   wordCount: number;
   translation: string;
-  AudioAnalysis: AudioAnalysis;
+  audio_analysis: AudioAnalysis;
 }
 
 export interface Words {
-  uid: string;
-  audioUrl: string;
+  id: string;
+  audio_url: string;
   text: string;
   difficulty: string;
   categories: string[];
@@ -30,17 +30,17 @@ export interface Words {
   definitions: { [key: string]: string }[];
   ipa: string;
   translation: string;
-  AudioAnalysis: AudioAnalysis;
+  audio_analysis: AudioAnalysis;
 }
 
 export interface Texts {
-  uid: string;
-  audioUrl: string;
+  id: string;
+  audio_url: string;
   text: string;
   difficulty: string;
   categories: string[];
   wordCount: number;
   bookTitle: string;
   translation: string;
-  AudioAnalysis: AudioAnalysis;
+  audio_analysis: AudioAnalysis;
 }

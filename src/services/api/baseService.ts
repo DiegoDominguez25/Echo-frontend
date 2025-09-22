@@ -12,13 +12,30 @@ export class BaseService {
     endpoint: string,
     params?: Record<string, string>
   ): string {
+    const stack = new Error().stack?.split("\n").slice(1, 4).join("\n");
+
+    console.log("🔗 buildUrl called:", {
+      baseUrl,
+      endpoint,
+      params,
+      timestamp: new Date().toISOString(),
+      caller: stack,
+    });
+
     let url = `${baseUrl}${endpoint}`;
 
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
-        url = url.replace(`:${key}`, value);
+        const before = url;
+        url = url.replace(`:${key}`, encodeURIComponent(value));
+        console.log(`🔧 Replaced :${key} with ${value}:`, {
+          before,
+          after: url,
+        });
       });
     }
+
+    console.log("✅ Final URL:", url);
     return url;
   }
 
@@ -32,96 +49,79 @@ export class BaseService {
   }
 
   public async makeRequest<T>(
-    mockData: T,
     baseUrl: string,
     endpoint: string,
     options?: RequestInit,
     params?: Record<string, string>
   ): Promise<ApiResponse<T>> {
-    if (API_CONFIG.USE_MOCK_API) {
-      const mockDelay = API_CONFIG.MOCK_DELAYS.normal;
-      await new Promise((resolve) => setTimeout(resolve, mockDelay));
+    const url = this.buildUrl(baseUrl, endpoint, params);
 
-      const method = options?.method || "GET";
-      const status = method === "POST" ? 201 : method === "DELETE" ? 204 : 200;
-      return {
-        data: mockData,
-        status,
-        message: `${method} Success (Mock Data)`,
-      };
-    } else {
-      const url = this.buildUrl(baseUrl, endpoint, params);
+    const headers = this.getDefaultHeaders({
+      "Content-Type": "application/json",
+      ...(options?.headers as Record<string, string>),
+    });
 
-      const headers = this.getDefaultHeaders({
-        "Content-Type": "application/json",
-        ...(options?.headers as Record<string, string>),
-      });
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
 
-      const response = await fetch(url, {
-        ...options,
-        headers,
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          `API error! status: ${response.status} ${response.statusText}`
-        );
-      }
-
-      const data = options?.method === "DELETE" ? null : await response.json();
-      return {
-        data: data,
-        status: response.status,
-        message: `${options?.method || "GET"} Success`,
-      };
+    if (!response.ok) {
+      throw new Error(
+        `API error! status: ${response.status} ${response.statusText}`
+      );
     }
+
+    const data = options?.method === "DELETE" ? null : await response.json();
+    return {
+      data: data,
+      status: response.status,
+      message: `${options?.method || "GET"} Success`,
+    };
   }
 
   public async makeFileRequest<T>(
-    mockData: T,
     baseUrl: string,
     endpoint: string,
     formData: FormData,
     params?: Record<string, string>
   ): Promise<ApiResponse<T>> {
-    if (API_CONFIG.USE_MOCK_API) {
-      const mockDelay = API_CONFIG.MOCK_DELAYS.audioAnalysis;
-      await new Promise((resolve) => setTimeout(resolve, mockDelay));
+    console.log("📤 FormData Debug:", {
+      endpoint: `${baseUrl}${endpoint}`,
+      formDataEntries: Array.from(formData.entries()).map(([key, value]) => ({
+        key,
+        valueType: typeof value,
+        valueSize: value instanceof File ? value.size : "N/A",
+        fileName: value instanceof File ? value.name : "N/A",
+        fileType: value instanceof File ? value.type : "N/A",
+      })),
+    });
 
-      return {
-        data: mockData,
-        status: 200,
-        message: "File upload completed (Mock)",
-      };
-    } else {
-      const url = this.buildUrl(baseUrl, endpoint, params);
+    const url = this.buildUrl(baseUrl, endpoint, params);
 
-      const response = await fetch(url, {
-        method: "POST",
-        body: formData,
-      });
+    const response = await fetch(url, {
+      method: "POST",
+      body: formData,
+    });
 
-      if (!response.ok) {
-        throw new Error(`File upload failed! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return {
-        data: data,
-        status: response.status,
-        message: "File upload completed",
-      };
+    if (!response.ok) {
+      throw new Error(`File upload failed! status: ${response.status}`);
     }
+
+    const data = await response.json();
+    return {
+      data: data,
+      status: response.status,
+      message: "File upload completed",
+    };
   }
 
   public async makeDataRequest<T>(
-    mockData: T,
     endpoint: string,
     options?: RequestInit,
     params?: Record<string, string>
   ): Promise<ApiResponse<T>> {
     return this.makeRequest(
-      mockData,
       API_CONFIG.DATA_API.BASE_URL,
       endpoint,
       options,
@@ -130,13 +130,11 @@ export class BaseService {
   }
 
   public async makeUserRequest<T>(
-    mockData: T,
     endpoint: string,
     options?: RequestInit,
     params?: Record<string, string>
   ): Promise<ApiResponse<T>> {
     return this.makeRequest(
-      mockData,
       API_CONFIG.USER_API.BASE_URL,
       endpoint,
       options,
@@ -145,16 +143,25 @@ export class BaseService {
   }
 
   public async makeAudioRequest<T>(
-    mockData: T,
     endpoint: string,
-    formData: FormData,
-    params?: Record<string, string>
+    formData: FormData
   ): Promise<ApiResponse<T>> {
     return this.makeFileRequest(
-      mockData,
       API_CONFIG.AUDIO_ANALYSIS_API.BASE_URL,
       endpoint,
-      formData,
+      formData
+    );
+  }
+
+  public async makeEvaluationRequest<T>(
+    endpoint: string,
+    options?: RequestInit,
+    params?: Record<string, string>
+  ): Promise<ApiResponse<T>> {
+    return this.makeRequest(
+      API_CONFIG.AUDIO_ANALYSIS_API.BASE_URL,
+      endpoint,
+      options,
       params
     );
   }

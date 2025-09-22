@@ -1,11 +1,13 @@
 import type { Evaluation } from "@/data/types/UserData";
 import { AudioEvaluationService } from "@/services/evaluationApi/AudioEvaluationService";
 import { useCallback, useState } from "react";
+import type { AudioAnalysis } from "../../data/types/ResourcesData";
 
 interface AudioEvaluationRequest {
   audioBlob: Blob;
   resourceId: string;
   userId: string;
+  referenceAnalysis: AudioAnalysis;
 }
 
 interface useAudioEvaluationState {
@@ -32,7 +34,9 @@ export const useAudioEvaluation = () => {
           error: null,
         }));
 
-        const result = await AudioEvaluationService.evaluateAudio(request);
+        const result = await AudioEvaluationService.evaluateCompleteAudio(
+          request
+        );
 
         setState((prev) => ({
           ...prev,
@@ -57,56 +61,8 @@ export const useAudioEvaluation = () => {
     []
   );
 
-  const evaluateAndSave = useCallback(
-    async (request: AudioEvaluationRequest): Promise<Evaluation | null> => {
-      try {
-        setState((prev) => ({
-          ...prev,
-          isEvaluating: true,
-          error: null,
-        }));
-
-        const evaluation = await AudioEvaluationService.evaluateAudio(request);
-
-        setState((prev) => ({
-          ...prev,
-          evaluation,
-          isEvaluating: false,
-          isSaving: true,
-        }));
-
-        await AudioEvaluationService.saveUserProgress(
-          request.userId,
-          request.resourceId,
-          evaluation
-        );
-
-        setState((prev) => ({
-          ...prev,
-          isSaving: false,
-        }));
-
-        return evaluation;
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Error saving evaluation";
-
-        setState((prev) => ({
-          ...prev,
-          error: errorMessage,
-          isEvaluating: false,
-          isSaving: false,
-        }));
-
-        return null;
-      }
-    },
-    []
-  );
-
   return {
     ...state,
     evaluateAudio,
-    evaluateAndSave,
   };
 };

@@ -4,7 +4,7 @@ import { API_CONFIG } from "@/config/api";
 import type { Progress } from "@/data/types/UserData";
 
 interface HasProps {
-  uid: string;
+  id: string;
   categories: string[];
   difficulty: string;
 }
@@ -28,8 +28,7 @@ type SingleResponse<T> = ApiResponse<T | null>;
 type ArrayResponse<T> = ApiResponse<T[]>;
 
 export function useGenericResource<T extends HasProps>(
-  resourceName: keyof typeof API_CONFIG.DATA_API.ENDPOINTS.resources,
-  mockData: T[]
+  resourceName: keyof typeof API_CONFIG.DATA_API.ENDPOINTS.resources
 ) {
   const [data, setData] = useState<T[]>([]);
   const [dataWithProgress, setDataWithProgress] = useState<
@@ -41,7 +40,7 @@ export function useGenericResource<T extends HasProps>(
   const [singleResourceWithProgress, setSingleResourceWithProgress] =
     useState<ResourceWithProgress<T> | null>(null);
 
-  const service = createResourceService<T>(resourceName, mockData);
+  const service = createResourceService<T>(resourceName);
 
   const handleAsync = useCallback(
     async <R>(

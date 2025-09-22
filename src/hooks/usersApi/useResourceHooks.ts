@@ -1,30 +1,26 @@
 import { useGenericResource } from "./GenericResource";
 import type { Sentences, Words, Texts } from "@/data/types/ResourcesData";
-import {
-  mockSentences,
-  mockWords,
-  mockTexts,
-} from "@/data/mockups/resourcesData";
 
 export const useSentences = () => {
-  const hook = useGenericResource<Sentences>("sentences", mockSentences);
-
+  const hook = useGenericResource<Sentences>("sentences");
+  console.log("🎣 Initializing sentences hook...");
   return {
     ...hook,
   };
 };
 
 export const useWords = () => {
-  const hook = useGenericResource<Words>("words", mockWords);
+  const hook = useGenericResource<Words>("words");
 
+  console.log("🎣 Initializing words hook...");
   return {
     ...hook,
   };
 };
 
 export const useTexts = () => {
-  const hook = useGenericResource<Texts>("texts", mockTexts);
-
+  const hook = useGenericResource<Texts>("texts");
+  console.log("🎣 Initializing texts hook...");
   return {
     ...hook,
   };

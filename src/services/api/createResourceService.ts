@@ -11,7 +11,7 @@ type ResourceEndpoints = {
 };
 
 interface HasProps {
-  uid: string;
+  id: string;
   categories: string[];
   difficulty: string;
 }
@@ -35,8 +35,7 @@ type SingleResponse<T> = ApiResponse<T | null>;
 type ArrayResponse<T> = ApiResponse<T[]>;
 
 export function createResourceService<T extends HasProps>(
-  resourceName: keyof typeof API_CONFIG.DATA_API.ENDPOINTS.resources,
-  mockData: T[]
+  resourceName: keyof typeof API_CONFIG.DATA_API.ENDPOINTS.resources
 ) {
   const endpoints = API_CONFIG.DATA_API.ENDPOINTS.resources[
     resourceName
@@ -47,8 +46,9 @@ export function createResourceService<T extends HasProps>(
     userProgress?: Progress[]
   ): ResourceWithProgress<T> => {
     if (!userProgress) {
+      console.log("❌ No user progress data, returning defaults");
       return {
-        uid: resource.uid,
+        id: resource.id,
         categories: resource.categories,
         difficulty: resource.difficulty,
         resource,
@@ -60,12 +60,10 @@ export function createResourceService<T extends HasProps>(
       };
     }
 
-    const resourceProgress = userProgress.find(
-      (p) => p.resourceUid === resource.uid
-    );
+    const resourceProgress = userProgress.find((p) => p.id === resource.id);
 
     return {
-      uid: resource.uid,
+      id: resource.id,
       categories: resource.categories,
       difficulty: resource.difficulty,
       resource,
@@ -79,42 +77,25 @@ export function createResourceService<T extends HasProps>(
 
   return {
     async getAll(): Promise<ArrayResponse<T>> {
-      return baseService.makeDataRequest(mockData, endpoints.all);
+      return baseService.makeDataRequest(endpoints.all);
     },
 
     async getById(id: string): Promise<SingleResponse<T>> {
-      const mockItem = mockData.find((item) => item.uid === id) || null;
-      return baseService.makeDataRequest(mockItem, endpoints.byId, undefined, {
+      return baseService.makeDataRequest(endpoints.byId, undefined, {
         id,
       });
     },
 
     async getByCategory(category: string): Promise<ArrayResponse<T>> {
-      const mockFiltered = mockData.filter((item) =>
-        item.categories?.some((cat) =>
-          cat.toLowerCase().includes(category.toLowerCase())
-        )
-      );
-      return baseService.makeDataRequest(
-        mockFiltered,
-        endpoints.byCategory,
-        undefined,
-        { category }
-      );
+      return baseService.makeDataRequest(endpoints.byCategory, undefined, {
+        category,
+      });
     },
 
     async getByDifficulty(difficulty: string): Promise<ArrayResponse<T>> {
-      const mockFiltered = mockData.filter(
-        (item) => item.difficulty === difficulty
-      );
-      return baseService.makeDataRequest(
-        mockFiltered,
-        endpoints.byDifficulty,
-        undefined,
-        {
-          difficulty,
-        }
-      );
+      return baseService.makeDataRequest(endpoints.byDifficulty, undefined, {
+        difficulty,
+      });
     },
 
     async getAllWithProgress(
@@ -143,15 +124,26 @@ export function createResourceService<T extends HasProps>(
       userUid: string
     ): Promise<ArrayResponse<ResourceWithProgress<T>>> {
       try {
-        const resourcesResponse = await this.getByCategory(category);
-        const progressResponse = await userService.getUserProgress(userUid);
+        const allResourcesWithProgress = await this.getAllWithProgress(userUid);
 
-        const resourcesWithProgress = resourcesResponse.data.map((resource) =>
-          resourceWithProgress(resource, progressResponse.data)
-        );
+        const filtered = allResourcesWithProgress.data.filter((resource) => {
+          console.log("🔍 Filtering resource:", {
+            id: resource.id,
+            categories: resource.categories,
+            hasCategories: !!resource.categories,
+            isArray: Array.isArray(resource.categories),
+          });
 
+          return (
+            resource.categories &&
+            Array.isArray(resource.categories) &&
+            resource.categories.some((cat: string) =>
+              cat.toLowerCase().includes(category.toLowerCase())
+            )
+          );
+        });
         return {
-          data: resourcesWithProgress,
+          data: filtered,
           status: 200,
           message: "Resources by category with progress loaded successfully",
         };

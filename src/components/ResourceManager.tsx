@@ -13,16 +13,18 @@ type ResourceType = "words" | "sentences" | "texts";
 type ResourceData = Words | Sentences | Texts;
 
 interface ResourceManagerProps {
-  userUid: string;
+  user_id: string;
 }
 
-const ResourceManager: React.FC<ResourceManagerProps> = ({ userUid }) => {
+const ResourceManager: React.FC<ResourceManagerProps> = ({ user_id }) => {
   const [resourceType, setResourceType] = useState<ResourceType>("words");
   const [category, setCategory] = useState<string>("all");
   const [difficulty, setDifficulty] = useState<string>("all");
-  const [resources, setResources] = useState<
+  const [allResourcesWithProgress, setAllResourcesWithProgress] = useState<
     ResourceWithProgress<ResourceData>[]
   >([]);
+
+  const [loading, setLoading] = useState<boolean>(false);
 
   const resourceTypes = [
     { value: "words", label: "Words" },
@@ -51,7 +53,7 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({ userUid }) => {
       sentences: hookSentences,
       texts: hookTexts,
     }),
-    [hookWords, hookSentences, hookTexts]
+    []
   );
 
   useEffect(() => {
@@ -70,57 +72,103 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({ userUid }) => {
     loadInitialData();
   }, []);
 
-  const getCurrentTypeCategoriesWithCount = useMemo(() => {
-    const categoryMap = new Map<string, number>();
-
-    resourceHooks[resourceType].data.forEach((resource: ResourceData) => {
-      resource.categories.forEach((cat) => {
-        categoryMap.set(cat, (categoryMap.get(cat) || 0) + 1);
-      });
-    });
-
-    return Array.from(categoryMap.entries())
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [resourceHooks, resourceType]);
-
-  const currentHook = resourceHooks[resourceType];
-
   useEffect(() => {
-    const loadFilteredResources = async (): Promise<void> => {
+    const loadResourcesWithProgress = async () => {
+      if (!user_id) return;
+
       try {
-        let result: ResourceWithProgress<ResourceData>[] = [];
+        setLoading(true);
+        console.log(
+          `🚀 Loading all ${resourceType} with progress for user: ${user_id}...`
+        );
 
-        if (category === "all" && difficulty === "all") {
-          result = await currentHook.getAllWithProgress(userUid);
-        } else if (category !== "all" && difficulty === "all") {
-          result = await currentHook.getByCategoryWithProgress(
-            category,
-            userUid
-          );
-        } else if (category === "all" && difficulty !== "all") {
-          result = await currentHook.getByDifficultyWithProgress(
-            difficulty,
-            userUid
-          );
-        } else {
-          const allResources = await currentHook.getAllWithProgress(userUid);
-          result = allResources.filter(
-            (resource: ResourceWithProgress<ResourceData>) =>
-              resource.categories.some((cat: string) =>
-                cat.toLowerCase().includes(category.toLowerCase())
-              ) && resource.difficulty === difficulty
-          );
-        }
+        const currentHook = resourceHooks[resourceType];
+        const result = await currentHook.getAllWithProgress(user_id);
 
-        setResources(result);
+        console.log(
+          `✅ Loaded ${result?.length || 0} ${resourceType} with progress`
+        );
+        console.log("📊 Sample resource:", result?.[0]);
+
+        setAllResourcesWithProgress(result || []);
       } catch (error) {
-        console.error("Error loading resources:", error);
+        console.error(`❌ Error loading ${resourceType} with progress:`, error);
+        setAllResourcesWithProgress([]);
+      } finally {
+        setLoading(false);
       }
     };
 
-    loadFilteredResources();
-  }, [resourceType, category, difficulty, userUid]);
+    loadResourcesWithProgress();
+  }, [resourceType, user_id, resourceHooks]);
+
+  const currentHook = resourceHooks[resourceType];
+
+  const getCurrentTypeCategoriesWithCount = useMemo(() => {
+    const categoryMap = new Map<string, number>();
+
+    try {
+      console.log(
+        `🔄 Calculating categories from ${allResourcesWithProgress.length} resources...`
+      );
+
+      allResourcesWithProgress.forEach((resource, index) => {
+        if (!resource) {
+          console.warn(`⚠️ Resource ${index} is null/undefined`);
+          return;
+        }
+
+        if (!resource.categories || !Array.isArray(resource.categories)) {
+          console.warn(
+            `⚠️ Resource ${index} has invalid categories:`,
+            resource.categories
+          );
+          return;
+        }
+
+        resource.categories.forEach((cat) => {
+          if (cat && typeof cat === "string" && cat.trim()) {
+            const trimmedCat = cat.trim();
+            categoryMap.set(trimmedCat, (categoryMap.get(trimmedCat) || 0) + 1);
+            console.log(`📝 Added category: ${trimmedCat}`);
+          }
+        });
+      });
+
+      const result = Array.from(categoryMap.entries())
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      console.log(`📊 Final categories:`, result);
+      return result;
+    } catch (error) {
+      console.error("💥 Error calculating categories:", error);
+      return [];
+    }
+  }, [allResourcesWithProgress]);
+
+  const filteredResources = useMemo(() => {
+    console.log(`🔍 Filtering ${allResourcesWithProgress.length} resources...`);
+    console.log(`🔍 Filters: category=${category}, difficulty=${difficulty}`);
+
+    const filtered = allResourcesWithProgress.filter((resource) => {
+      if (!resource?.categories) return false;
+
+      const categoryMatch =
+        category === "all" ||
+        resource.categories.some(
+          (cat: string) => cat.toLowerCase() === category.toLowerCase()
+        );
+
+      const difficultyMatch =
+        difficulty === "all" || String(resource.difficulty) === difficulty;
+
+      return categoryMatch && difficultyMatch;
+    });
+
+    console.log(`✅ Filtered to ${filtered.length} resources`);
+    return filtered;
+  }, [allResourcesWithProgress, category, difficulty]);
 
   const handleViewResource = async (resourceId: string): Promise<void> => {
     try {
@@ -227,15 +275,15 @@ const ResourceManager: React.FC<ResourceManagerProps> = ({ userUid }) => {
             onChange={handleDifficultyChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="1">Easy</option>
-            <option value="2">Intermediate</option>
-            <option value="3">Difficult</option>
+            <option value={0}>Easy</option>
+            <option value={1}>Intermediate</option>
+            <option value={2}>Difficult</option>
           </select>
         </div>
       </div>
 
       <ResourceTable
-        resources={resources}
+        resources={filteredResources}
         resourceType={resourceType}
         onViewResource={handleViewResource}
         loading={currentHook.loading}

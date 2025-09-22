@@ -1,7 +1,6 @@
 import { useSentences, useWords, useTexts } from "@/hooks/usersApi";
 import type { ResourceWithProgress } from "@/services/api/createResourceService";
 import type { Sentences, Words, Texts } from "@/data/types/ResourcesData";
-import type React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import type { Evaluation } from "@/data/types/UserData";
@@ -10,12 +9,7 @@ import AudioRecorder from "./AudioRecorder";
 type ResourceType = "words" | "sentences" | "texts";
 type ResourceData = Words | Sentences | Texts;
 
-interface ResourceViewProps {
-  type: ResourceType;
-  id: string;
-}
-
-const ResourceView: React.FC<ResourceViewProps> = () => {
+const ResourceView = () => {
   const { type, id } = useParams<{ type: string; id: string }>();
   const navigate = useNavigate();
   const [resource, setResource] =
@@ -54,7 +48,7 @@ const ResourceView: React.FC<ResourceViewProps> = () => {
         const currentHook = resourceHooks[resourceType];
         const resourceData = await currentHook.getByIdWithProgress(
           id,
-          "user_001"
+          "i7yrtI00NGt8FpTQD2gz"
         );
 
         setResource(resourceData);
@@ -67,6 +61,15 @@ const ResourceView: React.FC<ResourceViewProps> = () => {
 
     loadResource();
   }, [type, id]);
+
+  useEffect(() => {
+    console.log("🔍 ResourceView state:", {
+      resource,
+      hasResource: !!resource,
+      audioAnalysis: resource?.resource?.audio_analysis,
+      resourceStructure: resource ? Object.keys(resource) : "No resource",
+    });
+  }, [resource]);
 
   const handleGoBack = () => {
     navigate("/app/wstbysituation");
@@ -190,6 +193,11 @@ const ResourceView: React.FC<ResourceViewProps> = () => {
               <p className="text-lg text-blue-600 mt-2">
                 {sentence.translation}
               </p>
+              {sentence.audio_url &&
+                (console.log("🔍 Sentence has audio URL", sentence.audio_url),
+                true)}
+
+              <audio src={sentence.audio_url} controls />
             </div>
           </div>
         );
@@ -200,9 +208,7 @@ const ResourceView: React.FC<ResourceViewProps> = () => {
         return (
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                {text.text}
-              </h1>
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">Text</h1>
               <div className="prose max-w-none">
                 <p className="text-gray-800 leading-relaxed">{text.text}</p>
               </div>
@@ -277,9 +283,10 @@ const ResourceView: React.FC<ResourceViewProps> = () => {
 
         <AudioRecorder
           resourceId={id!}
-          userId="user_001"
+          userId="i7yrtI00NGt8FpTQD2gz"
           duration={3}
           onEvaluationComplete={handleEvaluationComplete}
+          referenceAnalysis={resource?.resource?.audio_analysis}
         />
 
         {resource.evaluation && (
@@ -289,55 +296,69 @@ const ResourceView: React.FC<ResourceViewProps> = () => {
               <div>
                 <span className="text-gray-600">Total score:</span>
                 <span className="ml-2 font-medium">
-                  {resource.evaluation.totalScore}
+                  {resource.evaluation.total_score}
                 </span>
               </div>
               <div>
                 <span className="text-gray-600">Clarity score:</span>
                 <span className="ml-2 font-medium">
-                  {resource.evaluation.clarityScore}
+                  {resource.evaluation.clarity_score}
                 </span>
               </div>
               <div>
                 <span className="text-gray-600">Speed score:</span>
                 <span className="ml-2 font-medium">
-                  {resource.evaluation.speedScore}
+                  {resource.evaluation.speed_score}
                 </span>
               </div>
               <div>
-                <span className="text-gray-600">Rythm score:</span>
+                <span className="text-gray-600">Rhythm score:</span>
                 <span className="ml-2 font-medium">
-                  {resource.evaluation.rythmScore}
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-600">Articulation score:</span>
-                <span className="ml-2 font-medium">
-                  {resource.evaluation.articulationScore}
+                  {resource.evaluation.rhythm_score}
                 </span>
               </div>
               <div>
                 <span className="text-gray-600">Clarity tip:</span>
                 <span className="ml-2 font-medium">
-                  {resource.evaluation.clarityTip}
+                  {resource.evaluation.clarity_tip &&
+                    (console.log(
+                      "🔍 clarity_tip:",
+                      resource.evaluation.clarity_tip
+                    ),
+                    true)}
                 </span>
               </div>
               <div>
                 <span className="text-gray-600">Speed tip:</span>
                 <span className="ml-2 font-medium">
-                  {resource.evaluation.speedTip}
+                  {resource.evaluation.speed_tip &&
+                    (console.log(
+                      "🔍 speed_tip:",
+                      resource.evaluation.speed_tip
+                    ),
+                    true)}
                 </span>
               </div>
               <div>
-                <span className="text-gray-600">Rythm tip:</span>
+                <span className="text-gray-600">Rhythm tip:</span>
                 <span className="ml-2 font-medium">
-                  {resource.evaluation.rythmTip}
+                  {resource.evaluation.rhythm_tip &&
+                    (console.log(
+                      "🔍 rhythm_tip:",
+                      resource.evaluation.rhythm_tip
+                    ),
+                    true)}
                 </span>
               </div>
               <div>
                 <span className="text-gray-600">Articulation tip:</span>
                 <span className="ml-2 font-medium">
-                  {resource.evaluation.articulationTip}
+                  {resource.evaluation.articulation_tip &&
+                    (console.log(
+                      "🔍 articulation_tip:",
+                      resource.evaluation.articulation_tip
+                    ),
+                    true)}
                 </span>
               </div>
             </div>
@@ -345,7 +366,7 @@ const ResourceView: React.FC<ResourceViewProps> = () => {
         )}
 
         <div className="flex flex-wrap gap-4">
-          {resource.resource.audioUrl && (
+          {resource.resource.audio_url && (
             <button className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium">
               Play audio
             </button>

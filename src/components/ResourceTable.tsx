@@ -18,10 +18,6 @@ const ResourceTable: React.FC<ResourceTableProps> = ({
   onViewResource,
   loading = false,
 }) => {
-  function capitalizeFirstLetter(string: string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  }
-
   const getDescription = (
     resource: ResourceWithProgress<ResourceData>
   ): string => {
@@ -30,7 +26,7 @@ const ResourceTable: React.FC<ResourceTableProps> = ({
       case "words":
         return (r as Words).text;
       case "sentences":
-        return (r as Sentences).text.slice(0, 1);
+        return (r as Sentences).text;
       case "texts":
         return (r as Texts).text;
       default:
@@ -51,22 +47,6 @@ const ResourceTable: React.FC<ResourceTableProps> = ({
         resource.difficulty as keyof typeof durations.words
       ] || "60s"
     );
-  };
-
-  const getWordCount = (
-    resource: ResourceWithProgress<ResourceData>
-  ): number => {
-    const r = resource.resource;
-    switch (resourceType) {
-      case "words":
-        return 1;
-      case "sentences":
-        return (r as Sentences).text.split(" ").length;
-      case "texts":
-        return (r as Texts).text.split(" ").length;
-      default:
-        return 0;
-    }
   };
 
   const getStatusColor = (
@@ -113,7 +93,7 @@ const ResourceTable: React.FC<ResourceTableProps> = ({
           {resources.length > 0 ? (
             resources.map((resource) => (
               <tr
-                key={resource.uid}
+                key={resource.id}
                 className="hover:bg-gray-50 transition-colors duration-200"
               >
                 {/* Completed */}
@@ -136,13 +116,14 @@ const ResourceTable: React.FC<ResourceTableProps> = ({
 
                 {/* Situation */}
                 <td className="px-6 py-4 whitespace-nowrap">
+                  {resource.categories && resource.categories.length > 0
+                    ? resource.categories[0]
+                    : "No category found"}
                   <span
                     className={`text-sm font-medium ${getStatusColor(
                       resource
                     )}`}
-                  >
-                    {capitalizeFirstLetter(resource.categories[0])}
-                  </span>
+                  ></span>
                   {resource.attempts > 0 && (
                     <div className="text-xs text-gray-400">
                       attempt: {resource.attempts}
@@ -157,14 +138,12 @@ const ResourceTable: React.FC<ResourceTableProps> = ({
                 </td>
 
                 {/* Words */}
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {getWordCount(resource)}
-                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"></td>
 
                 {/* Action */}
                 <td className="px-6 py-4 whitespace-nowrap">
                   <button
-                    onClick={() => onViewResource(resource.uid)}
+                    onClick={() => onViewResource(resource.id)}
                     className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
                   >
                     See more

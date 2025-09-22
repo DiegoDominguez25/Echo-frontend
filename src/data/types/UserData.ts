@@ -1,14 +1,13 @@
 export interface Evaluation {
-  audioUrl: string;
-  totalScore: number;
-  clarityScore: number;
-  speedScore: number;
-  rythmScore: number;
-  articulationScore: number;
-  clarityTip: string;
-  speedTip: string;
-  rythmTip: string;
-  articulationTip: string;
+  articulation_score: number;
+  clarity_score: number;
+  rhythm_score: number;
+  speed_score: number;
+  total_score: number;
+  articulation_tip: Array<string>;
+  clarity_tip: Array<string>;
+  rhythm_tip: Array<string>;
+  speed_tip: Array<string>;
 }
 
 export interface Users {
@@ -31,7 +30,7 @@ export interface UserApplication {
 }
 
 export interface Progress {
-  uid: string;
+  id: string;
   resourceUid: string;
   type: number;
   completed: boolean;

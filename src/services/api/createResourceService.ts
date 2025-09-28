@@ -20,7 +20,6 @@ export interface ResourceWithProgress<T> extends HasProps {
   resource: T;
   isCompleted: boolean;
   attempts: number;
-  lastAttempt: Date | null;
   evaluation: Progress["evaluation"] | null;
   progress: Progress | null;
 }
@@ -45,45 +44,56 @@ export function createResourceService<T extends HasProps>(
     resource: T,
     userProgress?: Progress[]
   ): ResourceWithProgress<T> => {
-    if (!userProgress) {
-      console.log("❌ No user progress data, returning defaults");
+    const progressForThisResource = userProgress?.find((p) => {
+      return p.resource_uid === resource.id;
+    });
+
+    if (progressForThisResource) {
       return {
         id: resource.id,
         categories: resource.categories,
         difficulty: resource.difficulty,
-        resource,
-        isCompleted: false,
-        attempts: 0,
-        lastAttempt: null,
-        evaluation: null,
-        progress: null,
+        resource: resource,
+        isCompleted: progressForThisResource.completed,
+        attempts: progressForThisResource.attempts,
+        evaluation: progressForThisResource.evaluation,
+        progress: progressForThisResource,
       };
     }
-
-    const resourceProgress = userProgress.find((p) => p.id === resource.id);
 
     return {
       id: resource.id,
       categories: resource.categories,
       difficulty: resource.difficulty,
-      resource,
-      isCompleted: resourceProgress?.completed ?? false,
-      attempts: resourceProgress?.attempts ?? 0,
-      lastAttempt: resourceProgress?.lastAttempt ?? null,
-      evaluation: resourceProgress?.evaluation ?? null,
-      progress: resourceProgress ?? null,
+      resource: resource,
+      isCompleted: false,
+      attempts: 0,
+      evaluation: null,
+      progress: null,
     };
   };
 
   return {
     async getAll(): Promise<ArrayResponse<T>> {
-      return baseService.makeDataRequest(endpoints.all);
+      const response = await baseService.makeDataRequest<T[]>(endpoints.all);
+
+      return response;
     },
 
     async getById(id: string): Promise<SingleResponse<T>> {
-      return baseService.makeDataRequest(endpoints.byId, undefined, {
-        id,
-      });
+      const response = await baseService.makeDataRequest<T>(
+        endpoints.byId,
+        undefined,
+        { id }
+      );
+
+      if (response.data && !("id" in response.data)) {
+        response.data = {
+          ...(response.data as object),
+          id: id,
+        } as T;
+      }
+      return response;
     },
 
     async getByCategory(category: string): Promise<ArrayResponse<T>> {
@@ -120,35 +130,35 @@ export function createResourceService<T extends HasProps>(
     },
 
     async getByCategoryWithProgress(
-      category: string,
+      resource_uid: string,
       userUid: string
-    ): Promise<ArrayResponse<ResourceWithProgress<T>>> {
+    ): Promise<SingleResponse<ResourceWithProgress<T>>> {
       try {
-        const allResourcesWithProgress = await this.getAllWithProgress(userUid);
+        const [resourceResponse, progressResponse] = await Promise.all([
+          this.getById(resource_uid),
+          userService.getUserProgressByResource(userUid, resource_uid),
+        ]);
 
-        const filtered = allResourcesWithProgress.data.filter((resource) => {
-          console.log("🔍 Filtering resource:", {
-            id: resource.id,
-            categories: resource.categories,
-            hasCategories: !!resource.categories,
-            isArray: Array.isArray(resource.categories),
-          });
+        if (!resourceResponse.data) {
+          return {
+            data: null,
+            status: 404,
+            message: `Resource with ID '${resource_uid}' not found`,
+          };
+        }
 
-          return (
-            resource.categories &&
-            Array.isArray(resource.categories) &&
-            resource.categories.some((cat: string) =>
-              cat.toLowerCase().includes(category.toLowerCase())
-            )
-          );
-        });
+        const resourceWithProgressData = resourceWithProgress(
+          resourceResponse.data,
+          progressResponse.data ? [progressResponse.data] : []
+        );
+
         return {
-          data: filtered,
+          data: resourceWithProgressData,
           status: 200,
-          message: "Resources by category with progress loaded successfully",
+          message: `Resource with ID '${resource_uid}' and progress loaded successfully`,
         };
       } catch (error) {
-        throw new Error(`Failed to load resources with progress: ${error}`);
+        throw new Error(`Failed to load resource with progress: ${error}`);
       }
     },
 

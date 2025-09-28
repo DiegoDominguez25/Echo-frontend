@@ -1,13 +1,15 @@
+import type { AudioAnalysis } from "./ResourcesData";
 export interface Evaluation {
   articulation_score: number;
   clarity_score: number;
-  rhythm_score: number;
+  rythm_score: number;
   speed_score: number;
   total_score: number;
-  articulation_tip: Array<string>;
-  clarity_tip: Array<string>;
-  rhythm_tip: Array<string>;
-  speed_tip: Array<string>;
+  articulation_tip: string[];
+  clarity_tip: string[];
+  rythm_tip: string[];
+  speed_tip: string[];
+  classification: string;
 }
 
 export interface Users {
@@ -31,11 +33,12 @@ export interface UserApplication {
 
 export interface Progress {
   id: string;
-  resourceUid: string;
+  resource_uid: string;
   type: number;
   completed: boolean;
-  completionDate: Date;
+  completion_date: Date;
   attempts: number;
-  lastAttempt: Date;
+  last_attempt: Date;
   evaluation: Evaluation;
+  audio_analysis: AudioAnalysis;
 }

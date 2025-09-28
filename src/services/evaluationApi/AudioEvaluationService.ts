@@ -5,12 +5,42 @@ import type { AudioAnalysis } from "@/data/types/ResourcesData";
 
 interface AudioAnalysisRequest {
   audioBlob: Blob;
-  resourceId: string;
-  userId: string;
+  resourceId?: string;
+  userId?: string;
 }
 
 interface AudioEvaluationRequest extends AudioAnalysisRequest {
   referenceAnalysis: AudioAnalysis;
+}
+
+export interface ResourceCompleted {
+  attempts: number;
+  audio_analysis: AudioAnalysis;
+  completed: boolean;
+  completion_date: string;
+  evaluation: EvaluationForDB;
+  last_attempt: string;
+  resource_uid: string;
+  type: number;
+}
+
+export type UserLevel = "beginner" | "intermediate" | "advanced";
+
+interface UserLevelResponse {
+  level: UserLevel;
+}
+
+export interface EvaluationForDB {
+  articulation_score: number;
+  articulation_tip: string;
+  clarity_score: number;
+  clarity_tip: string;
+  rythm_score: number;
+  rythm_tip: string;
+  speed_score: number;
+  speed_tip: string;
+  total_score: number;
+  audio_url?: string;
 }
 
 export class AudioEvaluationService {
@@ -83,21 +113,17 @@ export class AudioEvaluationService {
     referenceAnalysis: AudioAnalysis
   ): Promise<Evaluation> {
     try {
-      console.log("Starting audio comparison with reference...");
-
       const userAnalysisString = JSON.stringify(userAnalysis);
       const referenceAnalysisString = JSON.stringify(referenceAnalysis);
 
       const formData = new FormData();
+
       formData.append("user_analysis", userAnalysisString);
       formData.append("reference_analysis", referenceAnalysisString);
 
-      // ✅ Debug FormData contents
-      console.log("📤 FormData contents:", {
-        entries: Array.from(formData.entries()).map(([key, value]) => ({
-          key,
-          valueType: typeof value,
-        })),
+      console.log("🔬 Datos que se enviarán en FormData:", {
+        user_analysis: userAnalysisString,
+        reference_analysis: referenceAnalysisString,
       });
 
       const response = await baseService.makeFileRequest<Evaluation>(
@@ -133,19 +159,23 @@ export class AudioEvaluationService {
         evaluationRequest.referenceAnalysis
       );
 
+      const userLevel = await this.determineUserLevel(
+        userAnalysis,
+        evaluationRequest.referenceAnalysis
+      );
+
       const feedback = await this.getFeedback(
         userAnalysis,
         evaluationRequest.referenceAnalysis
       );
 
       console.log("✅ Step 2 completed: Audio comparison evaluated");
-
-      console.log("✅ Step 3 completed: User progress saved");
       console.log("🎉 Complete audio evaluation flow finished!");
 
       const completeEvaluation: Evaluation = {
         ...evaluation,
         ...feedback,
+        classification: userLevel,
       };
 
       return completeEvaluation;
@@ -155,10 +185,44 @@ export class AudioEvaluationService {
     }
   }
 
+  static async determineUserLevel(
+    userAnalysis: AudioAnalysis,
+    referenceAnalysis: AudioAnalysis
+  ): Promise<UserLevel> {
+    try {
+      console.log("🚀 Determining user level based on audio analysis...");
+
+      const userAnalysisString = JSON.stringify(userAnalysis);
+      const referenceAnalysisString = JSON.stringify(referenceAnalysis);
+
+      const formData = new FormData();
+
+      formData.append("user_analysis", userAnalysisString);
+      formData.append("reference_analysis", referenceAnalysisString);
+
+      console.log("🔬 FormData for user level determination:", {
+        user_analysis: userAnalysisString.substring(0, 100) + "...",
+        reference_analysis: referenceAnalysisString.substring(0, 100) + "...",
+      });
+
+      const response = await baseService.makeFileRequest<UserLevelResponse>(
+        API_CONFIG.AUDIO_ANALYSIS_API.BASE_URL,
+        API_CONFIG.AUDIO_ANALYSIS_API.ENDPOINTS.classification,
+        formData
+      );
+
+      console.log("✅ User level received:", response.data.level);
+
+      return response.data.level;
+    } catch (err) {
+      console.error("❌ Error determining user level:", err);
+      throw err;
+    }
+  }
+
   static async saveUserProgress(
     userId: string,
-    resourceId: string,
-    evaluation: Evaluation
+    resourceCompleted: ResourceCompleted
   ): Promise<void> {
     try {
       await baseService.makeUserRequest(
@@ -168,11 +232,10 @@ export class AudioEvaluationService {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(evaluation),
+          body: JSON.stringify(resourceCompleted),
         },
         {
-          userId,
-          resourceId,
+          user_id: userId,
         }
       );
     } catch (err) {

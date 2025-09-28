@@ -1,6 +1,9 @@
 import React from "react";
-import type { ResourceWithProgress } from "@/services/api/createResourceService";
-import type { Sentences, Words, Texts } from "@/data/types/ResourcesData";
+import type { ResourceWithProgress } from "../services/api/createResourceService";
+import type { Sentences, Words, Texts } from "../data/types/ResourcesData";
+import { AiTwotoneSound } from "react-icons/ai";
+import { FaChevronRight, FaSpinner } from "react-icons/fa";
+import { truncateText } from "@/utils/textUtils";
 
 type ResourceType = "words" | "sentences" | "texts";
 type ResourceData = Words | Sentences | Texts;
@@ -8,8 +11,9 @@ type ResourceData = Words | Sentences | Texts;
 interface ResourceTableProps {
   resources: ResourceWithProgress<ResourceData>[];
   resourceType: ResourceType;
-  onViewResource: (resourceId: string) => void;
+  onViewResource: (resource_uid: string) => void;
   loading?: boolean;
+  category?: string;
 }
 
 const ResourceTable: React.FC<ResourceTableProps> = ({
@@ -17,168 +21,136 @@ const ResourceTable: React.FC<ResourceTableProps> = ({
   resourceType,
   onViewResource,
   loading = false,
+  category = "all",
 }) => {
   const getDescription = (
     resource: ResourceWithProgress<ResourceData>
   ): string => {
-    const r = resource.resource;
-    switch (resourceType) {
-      case "words":
-        return (r as Words).text;
-      case "sentences":
-        return (r as Sentences).text;
-      case "texts":
-        return (r as Texts).text;
-      default:
-        return "Not description";
+    const text = (resource.resource as Texts).text;
+
+    if (resourceType === "texts") {
+      return truncateText(text, 5);
     }
+
+    return text;
   };
 
-  const getDuration = (
-    resource: ResourceWithProgress<ResourceData>
-  ): string => {
-    const durations = {
-      words: { easy: "30s", medium: "45s", hard: "60s" },
-      sentences: { easy: "60s", medium: "90s", hard: "120s" },
-      texts: { easy: "3min", medium: "5min", hard: "7min" },
-    };
-    return (
-      durations[resourceType]?.[
-        resource.difficulty as keyof typeof durations.words
-      ] || "60s"
-    );
-  };
-
-  const getStatusColor = (
-    resource: ResourceWithProgress<ResourceData>
-  ): string => {
-    if (resource.isCompleted) return "text-green-600";
-    if (resource.attempts > 0) return "text-yellow-600";
-    return "text-gray-600";
+  const formatDuration = (duration: number | null | undefined): string => {
+    if (typeof duration !== "number" || isNaN(duration)) {
+      return "-";
+    }
+    return `${Math.round(duration)} sec`;
   };
 
   if (loading) {
     return (
-      <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-        <p className="mt-2">Loading animation</p>
+      <div className="w-full flex justify-center items-center col-span-full">
+        <FaSpinner className="animate-spin text-4xl text-gray-400" />
+        <div className="text-gray-600 ml-2">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Completed
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Description
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Situation
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Duration
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Words
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {resources.length > 0 ? (
-            resources.map((resource) => (
-              <tr
-                key={resource.id}
-                className="hover:bg-gray-50 transition-colors duration-200"
-              >
-                {/* Completed */}
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {resource.isCompleted ? (
-                    <span className="circle font-semibold">
-                      Random color (yes)
-                    </span>
-                  ) : (
-                    <span className="circle">Without color (no)</span>
-                  )}
-                </td>
+    <div className="lg:mt-5">
+      <div className="flex min-w-full">
+        <div className="w-1/12 px-6 py-4 text-left text-sm font-semibold text-[#8BA1E9]">
+          Completed
+        </div>
+        <div className="w-3/12 px-6 py-4 text-left text-sm font-semibold text-[#B77777]">
+          Description
+        </div>
+        <div className="w-2/12 px-6 py-4 text-left text-sm font-semibold text-[#A39E31]">
+          Situation
+        </div>
+        <div className="w-2/12 px-6 py-4 text-left text-sm font-semibold text-[#56AF88]">
+          Duration
+        </div>
+        <div className="w-2/12 px-6 py-4 text-left text-sm font-semibold text-[#8BA1E9]">
+          Words
+        </div>
+        <div className="w-2/12 px-6 py-4"></div>
+      </div>
 
-                {/* Description */}
-                <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900 font-medium">
-                    {getDescription(resource)}
-                  </div>
-                </td>
+      <div className="overflow-hidden rounded-xl border border-gray-300">
+        <table className="min-w-full bg-white">
+          <tbody className="divide-y divide-gray-300">
+            {resources.length > 0 ? (
+              resources.map((resource) => {
+                const status = resource.isCompleted
+                  ? "completed"
+                  : resource.attempts > 0
+                  ? "in-progress"
+                  : "pending";
 
-                {/* Situation */}
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {resource.categories && resource.categories.length > 0
-                    ? resource.categories[0]
-                    : "No category found"}
-                  <span
-                    className={`text-sm font-medium ${getStatusColor(
-                      resource
-                    )}`}
-                  ></span>
-                  {resource.attempts > 0 && (
-                    <div className="text-xs text-gray-400">
-                      attempt: {resource.attempts}
-                      {resource.attempts !== 1 ? "s" : ""}
-                    </div>
-                  )}
-                </td>
+                const statusColors: Record<string, string> = {
+                  completed: "bg-blue-500",
+                  "in-progress": "bg-rose-500",
+                  pending: "bg-white border-2 border-gray-300",
+                };
 
-                {/* Duration */}
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {getDuration(resource)}
-                </td>
-
-                {/* Words */}
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"></td>
-
-                {/* Action */}
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <button
-                    onClick={() => onViewResource(resource.id)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                return (
+                  <tr
+                    key={resource.resource.id}
+                    className="hover:bg-gray-50 transition-colors duration-150"
                   >
-                    See more
-                  </button>
+                    <td className="w-1/12 px-6 py-4">
+                      <div className="flex items-center justify-center">
+                        <span
+                          className={`w-4 h-4 block rounded-full ${statusColors[status]}`}
+                        ></span>
+                      </div>
+                    </td>
+
+                    <td className="w-3/12 px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <AiTwotoneSound className="text-gray-500" />
+                        <span className="font-semibold text-gray-800">
+                          {getDescription(resource)}
+                        </span>
+                      </div>
+                    </td>
+
+                    <td className="w-2/12 px-6 py-4 font-medium text-gray-800">
+                      {resource.categories?.find(
+                        (cat) => cat.toLowerCase() === category.toLowerCase()
+                      ) ||
+                        resource.categories?.[0] ||
+                        "-"}
+                    </td>
+
+                    <td className="w-2/12 px-6 py-4 font-medium text-gray-800">
+                      {formatDuration(resource.resource.audio_duration)}
+                    </td>
+
+                    <td className="w-2/12 px-6 py-4 font-medium text-gray-800">
+                      {resource.resource.word_count} words
+                    </td>
+
+                    <td className="w-2/12 px-6 py-4">
+                      <button
+                        onClick={() => onViewResource(resource.resource.id)}
+                        className="flex items-center gap-2 text-gray-500 font-semibold hover:text-blue-600"
+                      >
+                        See more <FaChevronRight size={12} />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td
+                  colSpan={6}
+                  className="px-6 py-10 text-center text-gray-500"
+                >
+                  No resources found for the selected filters.
                 </td>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                <div className="text-gray-400">
-                  <p>Not resources found</p>
-                </div>
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-
-      {/* Quick Stats */}
-      {resources.length > 0 && (
-        <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-600">
-          <span>Total: {resources.length}</span>
-          <span>
-            Completed: {resources.filter((r) => r.isCompleted).length}
-          </span>
-          <span>
-            In Progress:{" "}
-            {resources.filter((r) => !r.isCompleted && r.attempts > 0).length}
-          </span>
-          <span>
-            Pending: {resources.filter((r) => r.attempts === 0).length}
-          </span>
-        </div>
-      )}
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

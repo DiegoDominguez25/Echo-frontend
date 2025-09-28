@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { createResourceService } from "@/services/api/createResourceService";
 import { API_CONFIG } from "@/config/api";
 import type { Progress } from "@/data/types/UserData";
@@ -13,7 +13,6 @@ interface ResourceWithProgress<T> extends HasProps {
   resource: T;
   isCompleted: boolean;
   attempts: number;
-  lastAttempt: Date | null;
   evaluation: Progress["evaluation"] | null;
   progress: Progress | null;
 }
@@ -40,7 +39,10 @@ export function useGenericResource<T extends HasProps>(
   const [singleResourceWithProgress, setSingleResourceWithProgress] =
     useState<ResourceWithProgress<T> | null>(null);
 
-  const service = createResourceService<T>(resourceName);
+  const service = useMemo(
+    () => createResourceService<T>(resourceName),
+    [resourceName]
+  );
 
   const handleAsync = useCallback(
     async <R>(
@@ -132,8 +134,23 @@ export function useGenericResource<T extends HasProps>(
       category: string,
       userUid: string
     ): Promise<ResourceWithProgress<T>[]> => {
+      const fetchAndAdapt = async (): Promise<
+        ArrayResponse<ResourceWithProgress<T>>
+      > => {
+        const singleResponse = await service.getByCategoryWithProgress(
+          category,
+          userUid
+        );
+
+        if (singleResponse.data) {
+          return { ...singleResponse, data: [singleResponse.data] };
+        } else {
+          return { ...singleResponse, data: [] };
+        }
+      };
+
       return handleAsync(
-        () => service.getByCategoryWithProgress(category, userUid),
+        fetchAndAdapt,
         (response: ArrayResponse<ResourceWithProgress<T>>) =>
           setDataWithProgress(response.data)
       ).then((response) => response.data);
@@ -159,22 +176,40 @@ export function useGenericResource<T extends HasProps>(
     return getAll();
   }, [getAll]);
 
-  return {
-    data,
-    singleItem,
-    loading,
-    error,
-
-    getAll,
-    getById,
-    getByCategory,
-    getByDifficulty,
-
-    getAllWithProgress,
-    getByIdWithProgress,
-    getByCategoryWithProgress,
-    getByDifficultyWithProgress,
-
-    refresh,
-  };
+  return useMemo(
+    () => ({
+      data,
+      singleItem,
+      loading,
+      error,
+      dataWithProgress,
+      singleResourceWithProgress,
+      getAll,
+      getById,
+      getByCategory,
+      getByDifficulty,
+      getAllWithProgress,
+      getByIdWithProgress,
+      getByCategoryWithProgress,
+      getByDifficultyWithProgress,
+      refresh,
+    }),
+    [
+      data,
+      singleItem,
+      loading,
+      error,
+      dataWithProgress,
+      singleResourceWithProgress,
+      getAll,
+      getById,
+      getByCategory,
+      getByDifficulty,
+      getAllWithProgress,
+      getByIdWithProgress,
+      getByCategoryWithProgress,
+      getByDifficultyWithProgress,
+      refresh,
+    ]
+  );
 }

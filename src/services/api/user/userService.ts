@@ -67,6 +67,38 @@ export class UserService {
     );
   }
 
+  async getUserProgressByResource(
+    userUid: string,
+    resource_uid: string
+  ): Promise<ApiResponse<Progress | null>> {
+    try {
+      const endpoint = API_CONFIG.USER_API.ENDPOINTS.getResourceProgress;
+
+      const response = await baseService.makeUserRequest<Progress[]>(
+        endpoint,
+        { method: "GET" },
+        { user_id: userUid, resource_uid: resource_uid }
+      );
+      const progressItem =
+        response.data && response.data.length > 0 ? response.data[0] : null;
+
+      return { ...response, data: progressItem };
+    } catch (error) {
+      if (error) {
+        return {
+          data: null,
+          status: 404,
+          message: "No progress found for this resource.",
+        };
+      }
+      console.error(
+        `Failed to get progress for resource ${resource_uid}`,
+        error
+      );
+      throw error;
+    }
+  }
+
   async createOrUpdateProgress(
     userUid: string,
     resourceUid: string,

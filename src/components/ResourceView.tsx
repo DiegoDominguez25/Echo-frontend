@@ -1,21 +1,46 @@
 import { useSentences, useWords, useTexts } from "@/hooks/usersApi";
 import type { ResourceWithProgress } from "@/services/api/createResourceService";
-import type { Sentences, Words, Texts } from "@/data/types/ResourcesData";
+import type {
+  Sentences,
+  Words,
+  Texts,
+  AudioAnalysis,
+} from "@/data/types/ResourcesData";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import type { Evaluation } from "@/data/types/UserData";
 import AudioRecorder from "./AudioRecorder";
+import type {
+  EvaluationForDB,
+  ResourceCompleted,
+  UserLevel,
+} from "@/services/evaluationApi/AudioEvaluationService";
+import { useAudioEvaluation } from "../hooks/evaluationApi/useAudioEvaluation";
+import AppHeader from "./layout/AppHeader";
+import { FiArrowLeft } from "react-icons/fi";
+import AudioPlayer from "./AudioPlayer";
+import TranscriptView from "./TranscriptView";
+import EvaluationCard from "./EvaluationCard";
+import { truncateText } from "@/utils/textUtils";
+import no_evaluation from "@/assets/images/no_evaluation.png";
+import LevelCard from "./LevelCard";
 
 type ResourceType = "words" | "sentences" | "texts";
 type ResourceData = Words | Sentences | Texts;
 
 const ResourceView = () => {
-  const { type, id } = useParams<{ type: string; id: string }>();
+  const { type, resource_uid } = useParams<{
+    type: string;
+    resource_uid: string;
+  }>();
   const navigate = useNavigate();
   const [resource, setResource] =
     useState<ResourceWithProgress<ResourceData> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userAudioAnalysis, setUserAudioAnalysis] =
+    useState<AudioAnalysis | null>(null);
+  const [isTranslated, setIsTranslated] = useState(false);
 
   const wordsHook = useWords();
   const sentencesHook = useSentences();
@@ -30,13 +55,26 @@ const ResourceView = () => {
     [wordsHook, sentencesHook, textsHook]
   );
 
+  const mapDifficulty = (level: string | number) => {
+    switch (String(level)) {
+      case "0":
+        return "Easy";
+      case "1":
+        return "Intermediate";
+      case "2":
+        return "Difficult";
+      default:
+        return "Unknown";
+    }
+  };
+
   useEffect(() => {
     const loadResource = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        if (!type || !id) {
+        if (!type || !resource_uid) {
           throw new Error("Invalid resource type or ID");
         }
 
@@ -47,7 +85,7 @@ const ResourceView = () => {
 
         const currentHook = resourceHooks[resourceType];
         const resourceData = await currentHook.getByIdWithProgress(
-          id,
+          resource_uid,
           "i7yrtI00NGt8FpTQD2gz"
         );
 
@@ -60,46 +98,89 @@ const ResourceView = () => {
     };
 
     loadResource();
-  }, [type, id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [type, resource_uid]);
 
   useEffect(() => {
     console.log("🔍 ResourceView state:", {
       resource,
-      hasResource: !!resource,
-      audioAnalysis: resource?.resource?.audio_analysis,
-      resourceStructure: resource ? Object.keys(resource) : "No resource",
     });
   }, [resource]);
 
   const handleGoBack = () => {
     navigate("/app/wstbysituation");
   };
+  const audioEvaluation = useAudioEvaluation();
 
-  const handleEvaluationComplete = (evaluation: Evaluation) => {
+  const handleEvaluationComplete = (
+    evaluation: Evaluation,
+    analysis: AudioAnalysis | null
+  ) => {
     console.log("Evaluation completed:", evaluation);
-
+    setUserAudioAnalysis(analysis);
     setResource((prev) =>
       prev
         ? {
             ...prev,
             evaluation,
-            isCompleted: true,
-            attempts: prev?.attempts + 1,
+            attempts: (prev.attempts || 0) + 1,
           }
         : null
     );
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4">Loading animation</p>
-        </div>
-      </div>
+  const handleSaveProgress = async () => {
+    if (
+      !resource ||
+      !resource_uid ||
+      !resource.evaluation ||
+      !userAudioAnalysis
+    ) {
+      console.error("❌ Cannot save progress: Missing required data.", {
+        resource,
+        evaluation: resource?.evaluation,
+        userAudioAnalysis,
+      });
+      return;
+    }
+
+    const evaluationForDB: EvaluationForDB = {
+      ...resource.evaluation,
+      articulation_tip: resource.evaluation.articulation_tip.join(" "),
+      clarity_tip: resource.evaluation.clarity_tip.join(" "),
+      rythm_tip: resource.evaluation.rythm_tip.join(" "),
+      speed_tip: resource.evaluation.speed_tip.join(" "),
+      audio_url: resource.resource.audio_url || "",
+    };
+    const progressData: ResourceCompleted = {
+      resource_uid: resource_uid,
+      type: 1,
+      attempts: resource.attempts,
+      completed: true,
+      last_attempt: new Date().toISOString(),
+      completion_date: new Date().toISOString(),
+      evaluation: evaluationForDB,
+      audio_analysis: userAudioAnalysis,
+    };
+    const userId = "i7yrtI00NGt8FpTQD2gz";
+    const success = await audioEvaluation.saveUserProgress(
+      userId,
+      progressData
     );
-  }
+    if (success) {
+      console.log("💾 Progress saved successfully:", progressData);
+      setResource((prev) =>
+        prev
+          ? {
+              ...prev,
+              isCompleted: true,
+            }
+          : null
+      );
+    } else {
+      console.error("❌ Failed to save progress via hook.");
+    }
+  };
 
   if (error) {
     return (
@@ -119,6 +200,14 @@ const ResourceView = () => {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading resource...</p>
+      </div>
+    );
+  }
+
   if (!resource) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -134,7 +223,7 @@ const ResourceView = () => {
             onClick={handleGoBack}
             className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
           >
-            Volver atrás
+            Back
           </button>
         </div>
       </div>
@@ -147,33 +236,29 @@ const ResourceView = () => {
     switch (type) {
       case "words": {
         const word = r as Words;
+        const handleTranslateToggle = () => {
+          setIsTranslated((prevState) => !prevState);
+        };
+
         return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                {word.text}
-              </h1>
-              <p className="text-lg text-gray-600">{word.ipa}</p>
-              <p className="text-xl text-blue-600 font-medium">
-                {word.translation}
-              </p>
+          <div className="bg-white pb-30 px-4 pt-3 rounded-lg shadow-md border w-full border-gray-200">
+            <div className="flex gap-5 items-center pb-4 border-gray-200 mb-4">
+              <div className="flex items-center gap-2 text-gray-500 font-medium text-sm">
+                <span className="text-lg">🌐</span>
+                <span>{isTranslated ? "Spanish" : "English"}</span>
+              </div>
+              <button
+                onClick={handleTranslateToggle}
+                className="text-sm font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-4 py-1.5 rounded-b-sm transition-colors"
+              >
+                {isTranslated ? "Show Original" : "Translate"}
+              </button>
             </div>
 
-            <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">Definitions</h3>
-              {word.definitions.map((def, index) => (
-                <div key={index} className="mb-4 last:mb-0">
-                  <div className="flex items-start gap-2">
-                    <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                      {def.partOfSpeech}
-                    </span>
-                  </div>
-                  <p className="text-gray-900 mt-2">{def.meaning}</p>
-                  <p className="text-gray-600 text-sm mt-1 italic">
-                    "{def.example}"
-                  </p>
-                </div>
-              ))}
+            <div>
+              <p className="text-lg text-gray-800 leading-relaxed font-medium">
+                {isTranslated ? word.translation?.[0] : word.text}
+              </p>
             </div>
           </div>
         );
@@ -181,23 +266,30 @@ const ResourceView = () => {
 
       case "sentences": {
         const sentence = r as Sentences;
-        return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <h1 className="text-2xl font-bold text-gray-900 mb-4">
-                Sentence
-              </h1>
-              <p className="text-lg text-gray-800 bg-gray-50 p-4 rounded-lg">
-                {sentence.text}
-              </p>
-              <p className="text-lg text-blue-600 mt-2">
-                {sentence.translation}
-              </p>
-              {sentence.audio_url &&
-                (console.log("🔍 Sentence has audio URL", sentence.audio_url),
-                true)}
 
-              <audio src={sentence.audio_url} controls />
+        const handleTranslateToggle = () => {
+          setIsTranslated((prevState) => !prevState);
+        };
+
+        return (
+          <div className="bg-white pb-30 px-4 pt-3 rounded-lg shadow-md border w-full border-gray-200">
+            <div className="flex gap-5 items-center pb-4 border-gray-200 mb-4">
+              <div className="flex items-center gap-2 text-gray-500 font-medium text-sm">
+                <span className="text-lg">🌐</span>
+                <span>{isTranslated ? "Spanish" : "English"}</span>
+              </div>
+              <button
+                onClick={handleTranslateToggle}
+                className="text-sm font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-4 py-1.5 rounded-b-sm transition-colors"
+              >
+                {isTranslated ? "Show Original" : "Translate"}
+              </button>
+            </div>
+
+            <div>
+              <p className="text-lg text-gray-800 leading-relaxed font-medium">
+                {isTranslated ? sentence.translation : sentence.text}
+              </p>
             </div>
           </div>
         );
@@ -205,17 +297,29 @@ const ResourceView = () => {
 
       case "texts": {
         const text = r as Texts;
+        const handleTranslateToggle = () => {
+          setIsTranslated((prevState) => !prevState);
+        };
+
         return (
-          <div className="space-y-6">
+          <div className="bg-white pb-30 px-4 pt-3 rounded-lg shadow-md border w-full border-gray-200">
+            <div className="flex gap-5 items-center pb-4 border-gray-200 mb-4">
+              <div className="flex items-center gap-2 text-gray-500 font-medium text-sm">
+                <span className="text-lg">🌐</span>
+                <span>{isTranslated ? "Spanish" : "English"}</span>
+              </div>
+              <button
+                onClick={handleTranslateToggle}
+                className="text-sm font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-4 py-1.5 rounded-b-sm transition-colors"
+              >
+                {isTranslated ? "Show Original" : "Translate"}
+              </button>
+            </div>
+
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">Text</h1>
-              <div className="prose max-w-none">
-                <p className="text-gray-800 leading-relaxed">{text.text}</p>
-              </div>
-              <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                <p className="text-blue-900 font-medium">Translation:</p>
-                <p className="text-blue-800">{text.translation}</p>
-              </div>
+              <p className="text-lg text-gray-800 leading-relaxed font-medium">
+                {isTranslated ? text.translation : text.text}
+              </p>
             </div>
           </div>
         );
@@ -225,159 +329,130 @@ const ResourceView = () => {
         return <p>Unrecognized resource type</p>;
     }
   };
+  const resourceText =
+    (resource.resource as Sentences).text ||
+    (resource.resource as Words).text ||
+    (resource.resource as Texts).text;
 
+  const tagColors = [
+    {
+      bg: "bg-indigo-50",
+      border: "border-indigo-300",
+      text: "text-indigo-800",
+    },
+    { bg: "bg-pink-50", border: "border-pink-300", text: "text-pink-800" },
+    { bg: "bg-amber-50", border: "border-amber-300", text: "text-amber-800" },
+  ];
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        {/* Header */}
+    <div className="min-h-screen bg-white py-8">
+      <AppHeader />
+      <div className="grid lg:grid-cols-2 gap-8 items-center px-10">
         <div className="mb-8">
           <button
             onClick={handleGoBack}
-            className="flex items-center text-blue-600 hover:text-blue-800 mb-4"
+            className="flex items-center gap-2 text-gray-500 hover:text-gray-800 mb-4 text-sm"
           >
-            <span className="mr-2">←</span>
-            Get back
+            <FiArrowLeft /> Back to resources
           </button>
 
-          <div className="flex flex-wrap items-center gap-2 mb-4">
-            <span className="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">
-              {type === "words"
-                ? "Words"
-                : type === "sentences"
-                ? "Sentence"
-                : "Text"}
+          <div className="flex items-center flex-wrap gap-2 text-lg font-medium text-[#8BA1E9]">
+            <span>Resources</span>
+            <span>&gt;</span>
+            <span>
+              {type && (
+                <span>{type.charAt(0).toUpperCase() + type.slice(1)}</span>
+              )}
             </span>
-            <span
-              className={`text-sm px-3 py-1 rounded-full ${"bg-gray-100 text-gray-800"}`}
-            ></span>
-            {resource.categories.map((category, index) => (
-              <span
-                key={index}
-                className="bg-gray-100 text-gray-800 text-sm px-3 py-1 rounded-full"
-              >
-                {category}
-              </span>
-            ))}
+            <span>&gt;</span>
+            <span>By Situation</span>
+            <span>&gt;</span>
+            <span>{resource.categories[0]}</span>
+            <span>&gt;</span>
+            <span>{mapDifficulty(resource.difficulty)}</span>
           </div>
 
-          <div className="flex items-center gap-4 text-sm text-gray-600">
-            <span
-              className={`font-medium ${
-                resource.isCompleted ? "text-green-600" : "text-gray-600"
-              }`}
-            >
-              {resource.isCompleted ? "✅ Completed" : "⏳ Pending"}
-            </span>
-            {resource.attempts > 0 && (
-              <span>
-                🔄 {resource.attempts} attempt
-                {resource.attempts !== 1 ? "s" : ""}
-              </span>
+          <h1 className="text-4xl font-bold text-indigo-400 mt-2">
+            {`${truncateText(resourceText, 5)}`}
+          </h1>
+
+          <div className="flex flex-wrap items-center gap-3 my-4">
+            {resource.categories.map((category, index) => {
+              const color = tagColors[index % tagColors.length];
+              return (
+                <span
+                  key={index}
+                  className={`px-4 py-0.5 text-sm font-medium rounded-full border ${color.bg} ${color.border} ${color.text}`}
+                >
+                  {category}
+                </span>
+              );
+            })}
+          </div>
+
+          <div className=" flex flex-col bg-white rounded-lg mb-8">
+            {getResourceContent()}
+            {resource.resource.audio_url && (
+              <AudioPlayer
+                src={resource.resource.audio_url}
+                waveColor="#8BA1E9"
+                progressColor="#5575DE"
+              />
             )}
-          </div>
-        </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-          {getResourceContent()}
-        </div>
+            <TranscriptView
+              transcript={
+                userAudioAnalysis?.transcription ||
+                resource.progress?.audio_analysis.transcription
+              }
+            />
 
-        <AudioRecorder
-          resourceId={id!}
-          userId="i7yrtI00NGt8FpTQD2gz"
-          duration={3}
-          onEvaluationComplete={handleEvaluationComplete}
-          referenceAnalysis={resource?.resource?.audio_analysis}
-        />
-
-        {resource.evaluation && (
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-            <h3 className="text-lg font-semibold mb-4">Evaluation</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div>
-                <span className="text-gray-600">Total score:</span>
-                <span className="ml-2 font-medium">
-                  {resource.evaluation.total_score}
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-600">Clarity score:</span>
-                <span className="ml-2 font-medium">
-                  {resource.evaluation.clarity_score}
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-600">Speed score:</span>
-                <span className="ml-2 font-medium">
-                  {resource.evaluation.speed_score}
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-600">Rhythm score:</span>
-                <span className="ml-2 font-medium">
-                  {resource.evaluation.rhythm_score}
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-600">Clarity tip:</span>
-                <span className="ml-2 font-medium">
-                  {resource.evaluation.clarity_tip &&
-                    (console.log(
-                      "🔍 clarity_tip:",
-                      resource.evaluation.clarity_tip
-                    ),
-                    true)}
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-600">Speed tip:</span>
-                <span className="ml-2 font-medium">
-                  {resource.evaluation.speed_tip &&
-                    (console.log(
-                      "🔍 speed_tip:",
-                      resource.evaluation.speed_tip
-                    ),
-                    true)}
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-600">Rhythm tip:</span>
-                <span className="ml-2 font-medium">
-                  {resource.evaluation.rhythm_tip &&
-                    (console.log(
-                      "🔍 rhythm_tip:",
-                      resource.evaluation.rhythm_tip
-                    ),
-                    true)}
-                </span>
-              </div>
-              <div>
-                <span className="text-gray-600">Articulation tip:</span>
-                <span className="ml-2 font-medium">
-                  {resource.evaluation.articulation_tip &&
-                    (console.log(
-                      "🔍 articulation_tip:",
-                      resource.evaluation.articulation_tip
-                    ),
-                    true)}
-                </span>
-              </div>
+            <div className="w-full mt-5">
+              <AudioRecorder
+                resourceId={resource_uid!}
+                userId="i7yrtI00NGt8FpTQD2gz"
+                duration={resource.resource.audio_duration}
+                onEvaluationComplete={handleEvaluationComplete}
+                onSaveProgress={handleSaveProgress}
+                referenceAnalysis={resource?.resource?.audio_analysis}
+                attempts={resource.attempts || 0}
+              />
             </div>
           </div>
-        )}
-
-        <div className="flex flex-wrap gap-4">
-          {resource.resource.audio_url && (
-            <button className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium">
-              Play audio
-            </button>
+        </div>
+        <div>
+          {resource.evaluation ? (
+            <div className="min-w-3/4 justify-self-center">
+              <EvaluationCard
+                evaluation={resource.evaluation}
+                lastAttempt={resource.progress?.completion_date.toString()}
+              />
+            </div>
+          ) : (
+            <div className="bg-slate-50 border flex flex-col border-gray-200/80 rounded-xl p-4 md:p-6 space-y-4 h-1/2 items-center justify-center">
+              <div className="bg-white p-5 rounded-xl">
+                <img
+                  src={no_evaluation}
+                  className="h-80 w-auto object-contain"
+                />
+                <div className="text-center mt-5 font-medium text-gray-500">
+                  <p>Submit your recording to get an evaluation.</p>
+                </div>
+              </div>
+            </div>
           )}
-
-          <button
-            onClick={handleGoBack}
-            className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-medium"
-          >
-            ← Back
-          </button>
+          {resource.progress?.evaluation.classification ? (
+            <div>
+              <LevelCard
+                level={resource.progress.evaluation.classification as UserLevel}
+              />
+            </div>
+          ) : (
+            <div className={`rounded-xl p-6 shadow-sm mt-5`}>
+              <h3 className={`text-xl font-bold text-center w-full`}>
+                No user level estimated yet
+              </h3>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@ export const API_CONFIG = {
   USE_MOCK_API: false,
 
   DATA_API: {
-    BASE_URL: "http://localhost:8001",
+    BASE_URL: "https://terrific-dream-production.up.railway.app",
     ENDPOINTS: {
       resources: {
         sentences: {
@@ -26,15 +26,14 @@ export const API_CONFIG = {
   },
 
   USER_API: {
-    BASE_URL: "http://localhost:8003",
+    BASE_URL: "https://outstanding-wisdom-production-e6ae.up.railway.app",
     ENDPOINTS: {
       createAccount: "/users/account",
       createUserApplication: "/users/user_application",
 
       getUserProgress: "/users/progress/completed/:user_id",
       getResourceProgress: "/users/progress/:user_id/:resource_uid",
-      createOrUpdateEvaluation:
-        "/users/progress/evaluation/:user_id/:resource_uid",
+      createOrUpdateEvaluation: "/users/user_application/progress/:user_id",
     },
   },
 
@@ -44,6 +43,8 @@ export const API_CONFIG = {
       analyze: "/evaluation/analyze_audio",
       feedback: "/evaluation/evaluate_audio",
       tips: "/evaluation/feedback",
+      tips_local: "/evaluation/feedback/local",
+      classification: "classification/classify_audio",
     },
   },
 

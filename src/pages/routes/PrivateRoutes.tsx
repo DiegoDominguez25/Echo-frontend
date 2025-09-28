@@ -7,7 +7,10 @@ function PrivateRoutes() {
     <Routes>
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/wstbysituation" element={<WSTBySituation />} />
-      <Route path="/resources/:type/:id" element={<ResourcesView />} />
+      <Route
+        path="/resources/:type/:resource_uid"
+        element={<ResourcesView />}
+      />
     </Routes>
   );
 }

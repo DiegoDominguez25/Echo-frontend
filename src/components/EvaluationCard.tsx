@@ -170,19 +170,19 @@ const EvaluationCard: React.FC<EvaluationCardProps> = ({
         />
         <NoteSection
           icon={<FiBarChart2 className="text-blue-500" />}
-          title="Tone"
+          title="Rythm"
           description="Does your intonation match?"
           tip={evaluation.rythm_tip}
-          isOpen={!!openSections["Tone"]}
-          onToggle={() => handleToggle("Tone")}
+          isOpen={!!openSections["Rythm"]}
+          onToggle={() => handleToggle("Rythm")}
         />
         <NoteSection
           icon={<FiMic className="text-purple-500" />}
-          title="Phonetic Precision"
+          title="Articulation"
           description="How good is your accent?"
           tip={evaluation.articulation_tip}
-          isOpen={!!openSections["Phonetic Precision"]}
-          onToggle={() => handleToggle("Phonetic Precision")}
+          isOpen={!!openSections["Articulation"]}
+          onToggle={() => handleToggle("Articulation")}
         />
       </div>
     </div>

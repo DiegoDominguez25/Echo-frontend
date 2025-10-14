@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { useAudioRecorder } from "@/hooks/evaluationApi/useAudioRecorder";
 import { useAudioEvaluation } from "@/hooks/evaluationApi/useAudioEvaluation";
-import type { Evaluation } from "@/data/types/UserData";
+import type { FlatEvaluation } from "@/data/types/UserData";
 import type { AudioAnalysis } from "../data/types/ResourcesData";
 import { FiMic, FiSquare, FiLoader, FiSend } from "react-icons/fi";
 import AudioPlayer from "./AudioPlayer";
@@ -11,7 +11,7 @@ interface AudioRecorderProps {
   userId: string;
   duration: number;
   onEvaluationComplete: (
-    evaluation: Evaluation,
+    evaluation: FlatEvaluation,
     userAnalysis: AudioAnalysis
   ) => void;
   onSaveProgress: () => void;

@@ -9,8 +9,20 @@ import {
   FiStar,
 } from "react-icons/fi";
 
+interface EvaluationForCard {
+  articulation_tip: string[];
+  clarity_tip: string[];
+  rythm_tip: string[];
+  speed_tip: string[];
+  articulation_score: number;
+  clarity_score: number;
+  rythm_score: number;
+  speed_score: number;
+  total_score: number;
+  classification: string;
+}
 interface EvaluationCardProps {
-  evaluation: Evaluation;
+  evaluation: Evaluation | EvaluationForCard;
   lastAttempt?: string;
 }
 
@@ -53,9 +65,15 @@ const NoteSection: React.FC<{
       </div>
     </button>
     {isOpen && (
-      <div className="pl-10 mt-2 flex items-start gap-2">
-        <div className="w-1.5 h-1.5 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
-        <p className="text-gray-600 text-sm">{tip}</p>
+      <div className="pl-10 mt-2 space-y-2">
+        {" "}
+        {/* Contenedor con espaciado vertical */}
+        {tip?.map((item, index) => (
+          <div key={index} className="flex items-start gap-2">
+            <div className="w-1.5 h-1.5 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
+            <p className="text-gray-600 text-sm">{item}</p>
+          </div>
+        ))}
       </div>
     )}
   </div>
@@ -68,7 +86,7 @@ const EvaluationCard: React.FC<EvaluationCardProps> = ({
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({
     Speed: true,
   });
-
+  const normalizedTips = "tips" in evaluation ? evaluation.tips : evaluation;
   const handleToggle = (section: string) => {
     setOpenSections((prev) => ({
       ...prev,
@@ -156,7 +174,7 @@ const EvaluationCard: React.FC<EvaluationCardProps> = ({
           icon={<FiZap className="text-red-500" />}
           title="Speed"
           description="How well paced are you?"
-          tip={evaluation.speed_tip}
+          tip={normalizedTips.speed_tip ?? []}
           isOpen={!!openSections["Speed"]}
           onToggle={() => handleToggle("Speed")}
         />
@@ -164,7 +182,7 @@ const EvaluationCard: React.FC<EvaluationCardProps> = ({
           icon={<FiMessageSquare className="text-yellow-500" />}
           title="Clarity"
           description="How understandable are you?"
-          tip={evaluation.clarity_tip}
+          tip={normalizedTips.clarity_tip ?? []}
           isOpen={!!openSections["Clarity"]}
           onToggle={() => handleToggle("Clarity")}
         />
@@ -172,7 +190,7 @@ const EvaluationCard: React.FC<EvaluationCardProps> = ({
           icon={<FiBarChart2 className="text-blue-500" />}
           title="Rythm"
           description="Does your intonation match?"
-          tip={evaluation.rythm_tip}
+          tip={normalizedTips.rythm_tip ?? []}
           isOpen={!!openSections["Rythm"]}
           onToggle={() => handleToggle("Rythm")}
         />
@@ -180,7 +198,7 @@ const EvaluationCard: React.FC<EvaluationCardProps> = ({
           icon={<FiMic className="text-purple-500" />}
           title="Articulation"
           description="How good is your accent?"
-          tip={evaluation.articulation_tip}
+          tip={normalizedTips.articulation_tip ?? []}
           isOpen={!!openSections["Articulation"]}
           onToggle={() => handleToggle("Articulation")}
         />

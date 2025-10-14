@@ -4,11 +4,11 @@ import { FiBarChart, FiTrendingUp, FiAward } from "react-icons/fi";
 import type { UserLevel } from "@/services/evaluationApi/AudioEvaluationService";
 
 interface UserLevelCardProps {
-  level: UserLevel;
+  label: UserLevel;
 }
 
 const levelConfig = {
-  beginner: {
+  Beginner: {
     title: "Beginner",
     description: "You're building a great foundation. Keep practicing!",
     icon: <FiBarChart className="h-6 w-6" />,
@@ -16,7 +16,7 @@ const levelConfig = {
     bg: "bg-green-50",
     border: "border-green-300",
   },
-  intermediate: {
+  Intermediate: {
     title: "Intermediate",
     description: "You're showing solid skills. Challenge yourself to improve!",
     icon: <FiTrendingUp className="h-6 w-6" />,
@@ -24,7 +24,7 @@ const levelConfig = {
     bg: "bg-yellow-50",
     border: "border-yellow-300",
   },
-  advanced: {
+  Advanced: {
     title: "Advanced",
     description: "Excellent work! You have a strong command of the language.",
     icon: <FiAward className="h-6 w-6" />,
@@ -34,8 +34,8 @@ const levelConfig = {
   },
 };
 
-const UserLevelCard: React.FC<UserLevelCardProps> = ({ level }) => {
-  const config = levelConfig[level] || levelConfig.beginner;
+const UserLevelCard: React.FC<UserLevelCardProps> = ({ label }) => {
+  const config = levelConfig[label];
 
   return (
     <div

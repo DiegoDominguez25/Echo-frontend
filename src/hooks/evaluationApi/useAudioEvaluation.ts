@@ -1,4 +1,4 @@
-import type { Evaluation } from "@/data/types/UserData";
+import type { FlatEvaluation } from "@/data/types/UserData";
 import {
   AudioEvaluationService,
   type ResourceCompleted,
@@ -16,7 +16,7 @@ interface AudioEvaluationRequest {
 interface useAudioEvaluationState {
   isEvaluating: boolean;
   isSaving: boolean;
-  evaluation: Evaluation | null;
+  evaluation: FlatEvaluation | null;
   error: string | null;
 }
 
@@ -34,7 +34,10 @@ export const useAudioEvaluation = () => {
   const evaluateAudio = useCallback(
     async (
       request: AudioEvaluationRequest
-    ): Promise<{ evaluation: Evaluation; analysis: AudioAnalysis } | null> => {
+    ): Promise<{
+      evaluation: FlatEvaluation;
+      analysis: AudioAnalysis;
+    } | null> => {
       try {
         setState((prev) => ({
           ...prev,
@@ -48,19 +51,32 @@ export const useAudioEvaluation = () => {
 
         setUserAudioAnalysis(analysis);
 
-        const evaluation = await AudioEvaluationService.evaluateAnalysis(
-          analysis,
-          request.referenceAnalysis
-        );
+        const [evaluation, feedback, userLevel] = await Promise.all([
+          AudioEvaluationService.evaluateAnalysis(
+            analysis,
+            request.referenceAnalysis
+          ),
+          AudioEvaluationService.getFeedback(
+            analysis,
+            request.referenceAnalysis
+          ),
+          AudioEvaluationService.determineUserLevel(
+            analysis,
+            request.referenceAnalysis
+          ),
+        ]);
 
-        const feedback = await AudioEvaluationService.getFeedback(
-          analysis,
-          request.referenceAnalysis
-        );
-
-        const result: Evaluation = {
-          ...evaluation,
-          ...feedback,
+        const result: FlatEvaluation = {
+          articulation_score: evaluation.articulation_score,
+          clarity_score: evaluation.clarity_score,
+          rythm_score: evaluation.rythm_score,
+          speed_score: evaluation.speed_score,
+          total_score: evaluation.total_score,
+          articulation_tip: feedback.articulation_tip,
+          clarity_tip: feedback.clarity_tip,
+          rythm_tip: feedback.rythm_tip,
+          speed_tip: feedback.speed_tip,
+          classification: userLevel,
         };
 
         setState((prev) => ({

@@ -8,10 +8,9 @@ import type {
 } from "@/data/types/ResourcesData";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
-import type { Evaluation } from "@/data/types/UserData";
+import type { Evaluation, FlatEvaluation } from "@/data/types/UserData";
 import AudioRecorder from "./AudioRecorder";
 import type {
-  EvaluationForDB,
   ResourceCompleted,
   UserLevel,
 } from "@/services/evaluationApi/AudioEvaluationService";
@@ -41,6 +40,9 @@ const ResourceView = () => {
   const [userAudioAnalysis, setUserAudioAnalysis] =
     useState<AudioAnalysis | null>(null);
   const [isTranslated, setIsTranslated] = useState(false);
+  const [currentUserLevel, setCurrentUserLevel] = useState<UserLevel | null>(
+    null
+  );
 
   const wordsHook = useWords();
   const sentencesHook = useSentences();
@@ -112,21 +114,43 @@ const ResourceView = () => {
   };
   const audioEvaluation = useAudioEvaluation();
 
+  const transformEvaluation = (rawEvaluation: FlatEvaluation): Evaluation => {
+    return {
+      articulation_score: rawEvaluation.articulation_score,
+      clarity_score: rawEvaluation.clarity_score,
+      rythm_score: rawEvaluation.rythm_score,
+      speed_score: rawEvaluation.speed_score,
+      total_score: rawEvaluation.total_score,
+      classification: rawEvaluation.classification,
+      tips: {
+        articulation_tip: rawEvaluation.articulation_tip,
+        clarity_tip: rawEvaluation.clarity_tip,
+        rythm_tip: rawEvaluation.rythm_tip,
+        speed_tip: rawEvaluation.speed_tip,
+      },
+      audio_url: resource?.resource.audio_url,
+    };
+  };
+
   const handleEvaluationComplete = (
-    evaluation: Evaluation,
+    evaluation: FlatEvaluation,
     analysis: AudioAnalysis | null
   ) => {
     console.log("Evaluation completed:", evaluation);
+    const transformedEvaluation = transformEvaluation(evaluation);
     setUserAudioAnalysis(analysis);
     setResource((prev) =>
       prev
         ? {
             ...prev,
-            evaluation,
+            evaluation: transformedEvaluation,
             attempts: (prev.attempts || 0) + 1,
           }
         : null
     );
+    if (evaluation.classification) {
+      setCurrentUserLevel(evaluation.classification as UserLevel);
+    }
   };
 
   const handleSaveProgress = async () => {
@@ -144,14 +168,6 @@ const ResourceView = () => {
       return;
     }
 
-    const evaluationForDB: EvaluationForDB = {
-      ...resource.evaluation,
-      articulation_tip: resource.evaluation.articulation_tip.join(" "),
-      clarity_tip: resource.evaluation.clarity_tip.join(" "),
-      rythm_tip: resource.evaluation.rythm_tip.join(" "),
-      speed_tip: resource.evaluation.speed_tip.join(" "),
-      audio_url: resource.resource.audio_url || "",
-    };
     const progressData: ResourceCompleted = {
       resource_uid: resource_uid,
       type: 1,
@@ -159,7 +175,7 @@ const ResourceView = () => {
       completed: true,
       last_attempt: new Date().toISOString(),
       completion_date: new Date().toISOString(),
-      evaluation: evaluationForDB,
+      evaluation: resource.evaluation,
       audio_analysis: userAudioAnalysis,
     };
     const userId = "i7yrtI00NGt8FpTQD2gz";
@@ -179,6 +195,7 @@ const ResourceView = () => {
       );
     } else {
       console.error("❌ Failed to save progress via hook.");
+      console.log(resource.evaluation);
     }
   };
 
@@ -440,10 +457,13 @@ const ResourceView = () => {
               </div>
             </div>
           )}
-          {resource.progress?.evaluation.classification ? (
-            <div>
+          {currentUserLevel || resource.progress ? (
+            <div className="mt-5">
               <LevelCard
-                level={resource.progress.evaluation.classification as UserLevel}
+                label={
+                  (resource.progress?.evaluation.classification as UserLevel) ||
+                  currentUserLevel
+                }
               />
             </div>
           ) : (

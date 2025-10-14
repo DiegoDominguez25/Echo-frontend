@@ -1,5 +1,5 @@
 import { API_CONFIG } from "@/config/api";
-import type { Evaluation } from "@/data/types/UserData";
+import type { Evaluation, FlatEvaluation } from "@/data/types/UserData";
 import { baseService } from "../api/baseService";
 import type { AudioAnalysis } from "@/data/types/ResourcesData";
 
@@ -18,16 +18,16 @@ export interface ResourceCompleted {
   audio_analysis: AudioAnalysis;
   completed: boolean;
   completion_date: string;
-  evaluation: EvaluationForDB;
+  evaluation: Evaluation;
   last_attempt: string;
   resource_uid: string;
   type: number;
 }
 
-export type UserLevel = "beginner" | "intermediate" | "advanced";
+export type UserLevel = "Beginner" | "Intermediate" | "Advanced";
 
 interface UserLevelResponse {
-  level: UserLevel;
+  label: UserLevel;
 }
 
 export interface EvaluationForDB {
@@ -111,7 +111,7 @@ export class AudioEvaluationService {
   static async getFeedback(
     userAnalysis: AudioAnalysis,
     referenceAnalysis: AudioAnalysis
-  ): Promise<Evaluation> {
+  ): Promise<FlatEvaluation> {
     try {
       const userAnalysisString = JSON.stringify(userAnalysis);
       const referenceAnalysisString = JSON.stringify(referenceAnalysis);
@@ -126,7 +126,7 @@ export class AudioEvaluationService {
         reference_analysis: referenceAnalysisString,
       });
 
-      const response = await baseService.makeFileRequest<Evaluation>(
+      const response = await baseService.makeFileRequest<FlatEvaluation>(
         API_CONFIG.AUDIO_ANALYSIS_API.BASE_URL,
         API_CONFIG.AUDIO_ANALYSIS_API.ENDPOINTS.tips,
         formData
@@ -197,8 +197,8 @@ export class AudioEvaluationService {
 
       const formData = new FormData();
 
-      formData.append("user_analysis", userAnalysisString);
       formData.append("reference_analysis", referenceAnalysisString);
+      formData.append("user_analysis", userAnalysisString);
 
       console.log("🔬 FormData for user level determination:", {
         user_analysis: userAnalysisString.substring(0, 100) + "...",
@@ -211,9 +211,9 @@ export class AudioEvaluationService {
         formData
       );
 
-      console.log("✅ User level received:", response.data.level);
+      console.log("✅ User level received:", response);
 
-      return response.data.level;
+      return response.data.label;
     } catch (err) {
       console.error("❌ Error determining user level:", err);
       throw err;

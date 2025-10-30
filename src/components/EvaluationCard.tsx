@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { Evaluation } from "@/data/types/UserData";
+import type { Evaluation } from "@/data/interfaces/UserData";
 import {
   FiChevronDown,
   FiZap,

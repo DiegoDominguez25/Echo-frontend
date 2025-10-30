@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { createResourceService } from "@/services/api/createResourceService";
 import { API_CONFIG } from "@/config/api";
-import type { Progress } from "@/data/types/UserData";
+import type { Progress } from "@/data/interfaces/UserData";
 
 interface HasProps {
   id: string;
@@ -23,21 +23,13 @@ type ApiResponse<T> = {
   message: string;
 };
 
-type SingleResponse<T> = ApiResponse<T | null>;
 type ArrayResponse<T> = ApiResponse<T[]>;
 
 export function useGenericResource<T extends HasProps>(
   resourceName: keyof typeof API_CONFIG.DATA_API.ENDPOINTS.resources
 ) {
-  const [data, setData] = useState<T[]>([]);
-  const [dataWithProgress, setDataWithProgress] = useState<
-    ResourceWithProgress<T>[]
-  >([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [singleItem, setSingleItem] = useState<T | null>(null);
-  const [singleResourceWithProgress, setSingleResourceWithProgress] =
-    useState<ResourceWithProgress<T> | null>(null);
 
   const service = useMemo(
     () => createResourceService<T>(resourceName),
@@ -45,15 +37,12 @@ export function useGenericResource<T extends HasProps>(
   );
 
   const handleAsync = useCallback(
-    async <R>(
-      asyncFn: () => Promise<R>,
-      onSuccess: (result: R) => void
-    ): Promise<R> => {
+    async <R>(asyncFn: () => Promise<R>): Promise<R> => {
       try {
         setLoading(true);
         setError(null);
         const result = await asyncFn();
-        onSuccess?.(result);
+
         return result;
       } catch (err) {
         const errorMessage =
@@ -68,49 +57,43 @@ export function useGenericResource<T extends HasProps>(
   );
 
   const getAll = useCallback(async (): Promise<T[]> => {
-    return handleAsync(
-      () => service.getAll(),
-      (response: ArrayResponse<T>) => setData(response.data)
-    ).then((response) => response.data);
+    return handleAsync(() => service.getAll()).then(
+      (response) => response.data
+    );
   }, [service, handleAsync]);
 
   const getById = useCallback(
     async (id: string): Promise<T | null> => {
-      return handleAsync(
-        () => service.getById(id),
-        (response: SingleResponse<T>) => setSingleItem(response.data)
-      ).then((response) => response.data);
+      return handleAsync(() => service.getById(id)).then(
+        (response) => response.data
+      );
     },
     [service, handleAsync]
   );
 
   const getByCategory = useCallback(
     async (category: string): Promise<T[]> => {
-      return handleAsync(
-        () => service.getByCategory(category),
-        (response: ArrayResponse<T>) => setData(response.data)
-      ).then((response) => response.data);
+      return handleAsync(() => service.getByCategory(category)).then(
+        (response) => response.data
+      );
     },
     [service, handleAsync]
   );
 
   const getByDifficulty = useCallback(
     async (difficulty: string): Promise<T[]> => {
-      return handleAsync(
-        () => service.getByDifficulty(difficulty),
-        (response: ArrayResponse<T>) => setData(response.data)
-      ).then((response) => response.data);
+      return handleAsync(() => service.getByDifficulty(difficulty)).then(
+        (response) => response.data
+      );
     },
     [service, handleAsync]
   );
 
   const getAllWithProgress = useCallback(
     async (userUid: string): Promise<ResourceWithProgress<T>[]> => {
-      return handleAsync(
-        () => service.getAllWithProgress(userUid),
-        (response: ArrayResponse<ResourceWithProgress<T>>) =>
-          setDataWithProgress(response.data)
-      ).then((response) => response.data);
+      return handleAsync(() => service.getAllWithProgress(userUid)).then(
+        (response) => response.data
+      );
     },
     [service, handleAsync]
   );
@@ -120,11 +103,9 @@ export function useGenericResource<T extends HasProps>(
       id: string,
       userUid: string
     ): Promise<ResourceWithProgress<T> | null> => {
-      return handleAsync(
-        () => service.getByIdWithProgress(id, userUid),
-        (response: SingleResponse<ResourceWithProgress<T>>) =>
-          setSingleResourceWithProgress(response.data)
-      ).then((response) => response.data);
+      return handleAsync(() => service.getByIdWithProgress(id, userUid)).then(
+        (response) => response.data
+      );
     },
     [service, handleAsync]
   );
@@ -149,11 +130,7 @@ export function useGenericResource<T extends HasProps>(
         }
       };
 
-      return handleAsync(
-        fetchAndAdapt,
-        (response: ArrayResponse<ResourceWithProgress<T>>) =>
-          setDataWithProgress(response.data)
-      ).then((response) => response.data);
+      return handleAsync(fetchAndAdapt).then((response) => response.data);
     },
     [service, handleAsync]
   );
@@ -163,10 +140,8 @@ export function useGenericResource<T extends HasProps>(
       difficulty: string,
       userUid: string
     ): Promise<ResourceWithProgress<T>[]> => {
-      return handleAsync(
-        () => service.getByDifficultyWithProgress(difficulty, userUid),
-        (response: ArrayResponse<ResourceWithProgress<T>>) =>
-          setDataWithProgress(response.data)
+      return handleAsync(() =>
+        service.getByDifficultyWithProgress(difficulty, userUid)
       ).then((response) => response.data);
     },
     [service, handleAsync]
@@ -178,12 +153,8 @@ export function useGenericResource<T extends HasProps>(
 
   return useMemo(
     () => ({
-      data,
-      singleItem,
       loading,
       error,
-      dataWithProgress,
-      singleResourceWithProgress,
       getAll,
       getById,
       getByCategory,
@@ -195,12 +166,8 @@ export function useGenericResource<T extends HasProps>(
       refresh,
     }),
     [
-      data,
-      singleItem,
       loading,
       error,
-      dataWithProgress,
-      singleResourceWithProgress,
       getAll,
       getById,
       getByCategory,

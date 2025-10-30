@@ -1,7 +1,7 @@
 import { API_CONFIG } from "@/config/api";
-import type { Evaluation, FlatEvaluation } from "@/data/types/UserData";
+import type { Evaluation, FlatEvaluation } from "@/data/interfaces/UserData";
 import { baseService } from "../api/baseService";
-import type { AudioAnalysis } from "@/data/types/ResourcesData";
+import type { AudioAnalysis } from "@/data/interfaces/ResourcesData";
 
 interface AudioAnalysisRequest {
   audioBlob: Blob;

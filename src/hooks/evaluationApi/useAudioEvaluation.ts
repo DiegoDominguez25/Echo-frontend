@@ -1,10 +1,10 @@
-import type { FlatEvaluation } from "@/data/types/UserData";
+import type { FlatEvaluation } from "@/data/interfaces/UserData";
 import {
   AudioEvaluationService,
   type ResourceCompleted,
 } from "@/services/evaluationApi/AudioEvaluationService";
 import { useCallback, useState } from "react";
-import type { AudioAnalysis } from "../../data/types/ResourcesData";
+import type { AudioAnalysis } from "../../data/interfaces/ResourcesData";
 
 interface AudioEvaluationRequest {
   audioBlob: Blob;

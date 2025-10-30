@@ -1,14 +1,7 @@
-import { useSentences, useWords, useTexts } from "@/hooks/usersApi";
-import type { ResourceWithProgress } from "@/services/api/createResourceService";
-import type {
-  Sentences,
-  Words,
-  Texts,
-  AudioAnalysis,
-} from "@/data/types/ResourcesData";
-import { useNavigate, useParams } from "react-router-dom";
-import { useState, useEffect, useMemo } from "react";
-import type { Evaluation, FlatEvaluation } from "@/data/types/UserData";
+import type { AudioAnalysis } from "@/data/interfaces/ResourcesData";
+import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import type { FlatEvaluation } from "@/data/interfaces/UserData";
 import AudioRecorder from "./AudioRecorder";
 import type {
   ResourceCompleted,
@@ -20,88 +13,25 @@ import { FiArrowLeft } from "react-icons/fi";
 import AudioPlayer from "./AudioPlayer";
 import TranscriptView from "./TranscriptView";
 import EvaluationCard from "./EvaluationCard";
-import { truncateText } from "@/utils/textUtils";
+import { truncateText } from "@/utils/resourceUtils";
 import no_evaluation from "@/assets/images/no_evaluation.png";
 import LevelCard from "./LevelCard";
-
-type ResourceType = "words" | "sentences" | "texts";
-type ResourceData = Words | Sentences | Texts;
+import { mapDifficulty, transformEvaluation } from "@/utils/resourceUtils";
+import { useResource } from "@/hooks/useResource";
+import { tagColors } from "@/constants/resourceConstants";
+import GetResourceContentView from "./layout/GetResourceContentView";
 
 const ResourceView = () => {
-  const { type, resource_uid } = useParams<{
-    type: string;
-    resource_uid: string;
-  }>();
+  const userId = "i7yrtI00NGt8FpTQD2gz";
   const navigate = useNavigate();
-  const [resource, setResource] =
-    useState<ResourceWithProgress<ResourceData> | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [userAudioAnalysis, setUserAudioAnalysis] =
     useState<AudioAnalysis | null>(null);
-  const [isTranslated, setIsTranslated] = useState(false);
   const [currentUserLevel, setCurrentUserLevel] = useState<UserLevel | null>(
     null
   );
 
-  const wordsHook = useWords();
-  const sentencesHook = useSentences();
-  const textsHook = useTexts();
-
-  const resourceHooks = useMemo(
-    () => ({
-      words: wordsHook,
-      sentences: sentencesHook,
-      texts: textsHook,
-    }),
-    [wordsHook, sentencesHook, textsHook]
-  );
-
-  const mapDifficulty = (level: string | number) => {
-    switch (String(level)) {
-      case "0":
-        return "Easy";
-      case "1":
-        return "Intermediate";
-      case "2":
-        return "Difficult";
-      default:
-        return "Unknown";
-    }
-  };
-
-  useEffect(() => {
-    const loadResource = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        if (!type || !resource_uid) {
-          throw new Error("Invalid resource type or ID");
-        }
-
-        const resourceType = type as ResourceType;
-        if (!["words", "sentences", "texts"].includes(resourceType)) {
-          throw new Error("Unsupported resource type");
-        }
-
-        const currentHook = resourceHooks[resourceType];
-        const resourceData = await currentHook.getByIdWithProgress(
-          resource_uid,
-          "i7yrtI00NGt8FpTQD2gz"
-        );
-
-        setResource(resourceData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadResource();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [type, resource_uid]);
+  const { resource, setResource, loading, error, type, resource_uid } =
+    useResource(userId);
 
   useEffect(() => {
     console.log("🔍 ResourceView state:", {
@@ -114,30 +44,15 @@ const ResourceView = () => {
   };
   const audioEvaluation = useAudioEvaluation();
 
-  const transformEvaluation = (rawEvaluation: FlatEvaluation): Evaluation => {
-    return {
-      articulation_score: rawEvaluation.articulation_score,
-      clarity_score: rawEvaluation.clarity_score,
-      rythm_score: rawEvaluation.rythm_score,
-      speed_score: rawEvaluation.speed_score,
-      total_score: rawEvaluation.total_score,
-      classification: rawEvaluation.classification,
-      tips: {
-        articulation_tip: rawEvaluation.articulation_tip,
-        clarity_tip: rawEvaluation.clarity_tip,
-        rythm_tip: rawEvaluation.rythm_tip,
-        speed_tip: rawEvaluation.speed_tip,
-      },
-      audio_url: resource?.resource.audio_url,
-    };
-  };
-
   const handleEvaluationComplete = (
     evaluation: FlatEvaluation,
     analysis: AudioAnalysis | null
   ) => {
     console.log("Evaluation completed:", evaluation);
-    const transformedEvaluation = transformEvaluation(evaluation);
+    const transformedEvaluation = transformEvaluation(
+      evaluation,
+      resource?.resource.audio_url
+    );
     setUserAudioAnalysis(analysis);
     setResource((prev) =>
       prev
@@ -160,7 +75,7 @@ const ResourceView = () => {
       !resource.evaluation ||
       !userAudioAnalysis
     ) {
-      console.error("❌ Cannot save progress: Missing required data.", {
+      console.error("Cannot save progress: Missing required data.", {
         resource,
         evaluation: resource?.evaluation,
         userAudioAnalysis,
@@ -178,13 +93,13 @@ const ResourceView = () => {
       evaluation: resource.evaluation,
       audio_analysis: userAudioAnalysis,
     };
-    const userId = "i7yrtI00NGt8FpTQD2gz";
+
     const success = await audioEvaluation.saveUserProgress(
       userId,
       progressData
     );
     if (success) {
-      console.log("💾 Progress saved successfully:", progressData);
+      console.log("Progress saved successfully:", progressData);
       setResource((prev) =>
         prev
           ? {
@@ -194,7 +109,7 @@ const ResourceView = () => {
           : null
       );
     } else {
-      console.error("❌ Failed to save progress via hook.");
+      console.error("Failed to save progress via hook.");
       console.log(resource.evaluation);
     }
   };
@@ -247,119 +162,6 @@ const ResourceView = () => {
     );
   }
 
-  const getResourceContent = () => {
-    const r = resource.resource;
-
-    switch (type) {
-      case "words": {
-        const word = r as Words;
-        const handleTranslateToggle = () => {
-          setIsTranslated((prevState) => !prevState);
-        };
-
-        return (
-          <div className="bg-white pb-30 px-4 pt-3 rounded-lg shadow-md border w-full border-gray-200">
-            <div className="flex gap-5 items-center pb-4 border-gray-200 mb-4">
-              <div className="flex items-center gap-2 text-gray-500 font-medium text-sm">
-                <span className="text-lg">🌐</span>
-                <span>{isTranslated ? "Spanish" : "English"}</span>
-              </div>
-              <button
-                onClick={handleTranslateToggle}
-                className="text-sm font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-4 py-1.5 rounded-b-sm transition-colors"
-              >
-                {isTranslated ? "Show Original" : "Translate"}
-              </button>
-            </div>
-
-            <div>
-              <p className="text-lg text-gray-800 leading-relaxed font-medium">
-                {isTranslated ? word.translation?.[0] : word.text}
-              </p>
-            </div>
-          </div>
-        );
-      }
-
-      case "sentences": {
-        const sentence = r as Sentences;
-
-        const handleTranslateToggle = () => {
-          setIsTranslated((prevState) => !prevState);
-        };
-
-        return (
-          <div className="bg-white pb-30 px-4 pt-3 rounded-lg shadow-md border w-full border-gray-200">
-            <div className="flex gap-5 items-center pb-4 border-gray-200 mb-4">
-              <div className="flex items-center gap-2 text-gray-500 font-medium text-sm">
-                <span className="text-lg">🌐</span>
-                <span>{isTranslated ? "Spanish" : "English"}</span>
-              </div>
-              <button
-                onClick={handleTranslateToggle}
-                className="text-sm font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-4 py-1.5 rounded-b-sm transition-colors"
-              >
-                {isTranslated ? "Show Original" : "Translate"}
-              </button>
-            </div>
-
-            <div>
-              <p className="text-lg text-gray-800 leading-relaxed font-medium">
-                {isTranslated ? sentence.translation : sentence.text}
-              </p>
-            </div>
-          </div>
-        );
-      }
-
-      case "texts": {
-        const text = r as Texts;
-        const handleTranslateToggle = () => {
-          setIsTranslated((prevState) => !prevState);
-        };
-
-        return (
-          <div className="bg-white pb-30 px-4 pt-3 rounded-lg shadow-md border w-full border-gray-200">
-            <div className="flex gap-5 items-center pb-4 border-gray-200 mb-4">
-              <div className="flex items-center gap-2 text-gray-500 font-medium text-sm">
-                <span className="text-lg">🌐</span>
-                <span>{isTranslated ? "Spanish" : "English"}</span>
-              </div>
-              <button
-                onClick={handleTranslateToggle}
-                className="text-sm font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-4 py-1.5 rounded-b-sm transition-colors"
-              >
-                {isTranslated ? "Show Original" : "Translate"}
-              </button>
-            </div>
-
-            <div>
-              <p className="text-lg text-gray-800 leading-relaxed font-medium">
-                {isTranslated ? text.translation : text.text}
-              </p>
-            </div>
-          </div>
-        );
-      }
-
-      default:
-        return <p>Unrecognized resource type</p>;
-    }
-  };
-  const resourceText =
-    (resource.resource as Sentences).text ||
-    (resource.resource as Words).text ||
-    (resource.resource as Texts).text;
-
-  const tagColors = [
-    {
-      bg: "bg-indigo-50",
-      border: "border-indigo-300",
-      text: "text-indigo-800",
-    },
-    { bg: "bg-pink-50", border: "border-pink-300", text: "text-pink-800" },
-    { bg: "bg-amber-50", border: "border-amber-300", text: "text-amber-800" },
-  ];
   return (
     <div className="min-h-screen bg-white py-8">
       <AppHeader />
@@ -389,7 +191,7 @@ const ResourceView = () => {
           </div>
 
           <h1 className="text-4xl font-bold text-indigo-400 mt-2">
-            {`${truncateText(resourceText, 5)}`}
+            {`${truncateText(resource.resource.text, 5)}`}
           </h1>
 
           <div className="flex flex-wrap items-center gap-3 my-4">
@@ -407,7 +209,7 @@ const ResourceView = () => {
           </div>
 
           <div className=" flex flex-col bg-white rounded-lg mb-8">
-            {getResourceContent()}
+            <GetResourceContentView resource={resource.resource} type={type} />
             {resource.resource.audio_url && (
               <AudioPlayer
                 src={resource.resource.audio_url}
@@ -415,14 +217,12 @@ const ResourceView = () => {
                 progressColor="#5575DE"
               />
             )}
-
             <TranscriptView
               transcript={
                 userAudioAnalysis?.transcription ||
                 resource.progress?.audio_analysis.transcription
               }
             />
-
             <div className="w-full mt-5">
               <AudioRecorder
                 resourceId={resource_uid!}

@@ -1,5 +1,5 @@
 import { useGenericResource } from "./GenericResource";
-import type { Sentences, Words, Texts } from "@/data/types/ResourcesData";
+import type { Sentences, Words, Texts } from "@/data/interfaces/ResourcesData";
 
 export const useSentences = () => {
   const hook = useGenericResource<Sentences>("sentences");

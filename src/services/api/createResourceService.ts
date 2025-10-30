@@ -1,6 +1,6 @@
 import { baseService } from "@/services/api/baseService";
 import { API_CONFIG } from "@/config/api";
-import type { Progress } from "@/data/types/UserData";
+import type { Progress } from "@/data/interfaces/UserData";
 import { userService } from "./user/userService";
 
 type ResourceEndpoints = {

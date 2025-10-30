@@ -1,9 +1,9 @@
 import React from "react";
 import type { ResourceWithProgress } from "../services/api/createResourceService";
-import type { Sentences, Words, Texts } from "../data/types/ResourcesData";
+import type { Sentences, Words, Texts } from "../data/interfaces/ResourcesData";
 import { AiTwotoneSound } from "react-icons/ai";
 import { FaChevronRight, FaSpinner } from "react-icons/fa";
-import { truncateText } from "@/utils/textUtils";
+import { truncateText } from "@/utils/resourceUtils";
 
 type ResourceType = "words" | "sentences" | "texts";
 type ResourceData = Words | Sentences | Texts;

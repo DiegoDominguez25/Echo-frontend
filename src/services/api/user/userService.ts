@@ -1,6 +1,10 @@
 import { baseService } from "../baseService";
 import { API_CONFIG } from "@/config/api";
-import type { Users, UserApplication, Progress } from "@/data/types/UserData";
+import type {
+  Users,
+  UserApplication,
+  Progress,
+} from "@/data/interfaces/UserData";
 
 type ApiResponse<T> = {
   data: T;

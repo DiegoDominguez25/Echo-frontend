@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { useSentences, useWords, useTexts } from "@/hooks/usersApi";
+import { useSentences, useWords, useTexts } from "@/hooks/resourceHooks";
 import type { ResourceWithProgress } from "@/services/api/createResourceService";
 import type { Sentences, Words, Texts } from "@/data/interfaces/ResourcesData";
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { usePagination, DOTS } from "@/hooks/usePaginationHooks";
+import { usePagination, DOTS } from "@/hooks/resourceHooks/usePaginationHooks";
 import {
   FaRegArrowAltCircleLeft,
   FaRegArrowAltCircleRight,

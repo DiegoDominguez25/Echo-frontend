@@ -17,23 +17,47 @@ export interface Evaluation {
   audio_url?: string;
 }
 
-export interface Users {
-  uid: string;
+export interface UserAccountPayload {
   email: string;
   name: string;
   password: string;
   disabled: boolean;
 }
+export interface CreateAccountResponse {
+  message: string;
+  doc_id: string;
+}
 
-export interface UserApplication {
-  uid: string;
-  userId: string;
-  lastLogin: Date;
-  creationDate: Date;
-  dateOfBirth: Date;
+export interface UserApplicationPayload {
+  user_uid: string;
+  last_login: string;
+  creation_date: string;
+  date_of_birth: string;
   gender: number;
-  profilePicture: string;
+  profile_picture: string | null;
   username: string;
+}
+export interface UserApplicationResponse {
+  message: string;
+  doc_id: string;
+}
+
+export interface LoginResponse {
+  message: string;
+  user_id: string;
+  name: string;
+  email: string;
+}
+
+export interface UserApplicationData {
+  id: string;
+  username: string;
+  profile_picture: string | null;
+  gender: number;
+  user_uid: string;
+  last_login: string;
+  date_of_birth: string;
+  creation_date: string;
 }
 
 export interface Progress {

@@ -1,9 +1,13 @@
 import { baseService } from "../baseService";
 import { API_CONFIG } from "@/config/api";
 import type {
-  Users,
-  UserApplication,
   Progress,
+  UserApplicationPayload,
+  UserApplicationResponse,
+  UserAccountPayload,
+  CreateAccountResponse,
+  LoginResponse,
+  UserApplicationData,
 } from "@/data/interfaces/UserData";
 
 type ApiResponse<T> = {
@@ -26,35 +30,59 @@ export class UserService {
     email: string;
     name: string;
     password: string;
-  }): Promise<ApiResponse<Users>> {
+  }): Promise<ApiResponse<CreateAccountResponse>> {
+    const dataToSend: UserAccountPayload = {
+      ...accountData,
+      disabled: false,
+    };
+
     return baseService.makeUserRequest(
       API_CONFIG.USER_API.ENDPOINTS.createAccount,
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(accountData),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dataToSend),
       }
     );
   }
 
-  async createUserApplication(applicationData: {
-    userId: string;
-    dateOfBirth: Date;
-    gender: number;
-    profilePicture: string;
-    username: string;
-  }): Promise<ApiResponse<UserApplication>> {
+  async createUserApplication(
+    applicationData: UserApplicationPayload
+  ): Promise<ApiResponse<UserApplicationResponse>> {
     return baseService.makeUserRequest(
       API_CONFIG.USER_API.ENDPOINTS.createUserApplication,
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(applicationData),
       }
+    );
+  }
+
+  async login(credentials: {
+    email: string;
+    password: string;
+  }): Promise<ApiResponse<LoginResponse>> {
+    return baseService.makeUserRequest(
+      API_CONFIG.USER_API.ENDPOINTS.userLogin,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(credentials),
+      }
+    );
+  }
+
+  async getUserApplication(
+    userId: string
+  ): Promise<ApiResponse<UserApplicationData>> {
+    return baseService.makeUserRequest(
+      API_CONFIG.USER_API.ENDPOINTS.getUserApplication,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      },
+      { user_id: userId }
     );
   }
 

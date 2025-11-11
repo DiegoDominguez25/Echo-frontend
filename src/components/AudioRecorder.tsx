@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
-import { useAudioRecorder } from "@/hooks/evaluationApi/useAudioRecorder";
-import { useAudioEvaluation } from "@/hooks/evaluationApi/useAudioEvaluation";
+import { useAudioRecorder } from "@/hooks/evaluationHooks/useAudioRecorder";
+import { useAudioEvaluation } from "@/hooks/evaluationHooks/useAudioEvaluation";
 import type { FlatEvaluation } from "@/data/interfaces/UserData";
 import type { AudioAnalysis } from "../data/interfaces/ResourcesData";
 import { FiMic, FiSquare, FiLoader, FiSend } from "react-icons/fi";

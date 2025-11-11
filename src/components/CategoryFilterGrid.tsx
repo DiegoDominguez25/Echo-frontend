@@ -29,15 +29,15 @@ const CategoryFilterGrid: React.FC<CategoryFilterGridProps> = ({
   capitalizedResourceType,
 }) => (
   <div>
-    <label className="text-xl font-semibold mt-2 text-center lg:text-left">
+    <label className="text-xl font-semibold mt-2 text-center lg:text-left xl:text-2xl">
       <p>{capitalizedResourceType} By Situations</p>
-      <p className="text-lg text-gray-700 font-normal mt-3 lg:text-base">
+      <p className="text-lg text-gray-700 font-normal mt-3 lg:text-base xl:text-xl">
         Practice with {resourceType} used in specific situations of life. Click
         a category to see more.
       </p>
     </label>
 
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 my-6 w-full">
+    <div className="flex gap-4 my-6 w-full overflow-x-auto">
       {loading ? (
         <div className="w-full flex justify-center items-center col-span-full">
           <FaSpinner className="animate-spin text-4xl text-gray-400" />
@@ -48,7 +48,7 @@ const CategoryFilterGrid: React.FC<CategoryFilterGridProps> = ({
           <button
             key={name}
             onClick={() => onCategoryClick(name)}
-            className={`flex flex-col border border-gray-300 shadow-md shadow-black/30 items-start justify-between p-4 rounded-lg text-lg text-left font-medium transition-all duration-200 h-60 ${
+            className={`flex flex-col border border-gray-300 shadow-md shadow-black/30 items-start justify-between p-4 rounded-lg text-lg xl:text-xl text-left font-medium transition-all duration-200 h-60 xl:h-80 xl:w-60 flex-none ${
               selectedCategory === name
                 ? "bg-[#8BA1E9] text-white"
                 : "bg-white text-black hover:bg-gray-100"
@@ -61,14 +61,14 @@ const CategoryFilterGrid: React.FC<CategoryFilterGridProps> = ({
                 <img
                   src={categoryImages[name]}
                   alt={name}
-                  className="w-32 h-32 object-contain"
+                  className="w-32 h-32 object-contain xl:w-50 xl:h-50"
                 />
               </div>
             )}
             <div className="mt-2">
               <div className="font-bold">{capitalizeFirstLetter(name)}</div>
               <div
-                className={`text-xs font-normal mt-1 border rounded-lg py-1 px-2 inline-block ${
+                className={`text-xs font-normal mt-1 border rounded-lg py-1 px-2 inline-block xl:text-lg${
                   selectedCategory === name
                     ? "bg-white/20 border-white/50 text-white"
                     : "bg-gray-100 border-gray-300 text-gray-600"

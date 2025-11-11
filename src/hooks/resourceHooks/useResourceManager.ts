@@ -3,11 +3,12 @@ import {
   useSentences,
   useWords,
   useTexts,
-} from "@/hooks/usersApi/useResourceHooks";
+} from "@/hooks/resourceHooks/useResourceHooks";
 import type { ResourceWithProgress } from "@/services/api/createResourceService";
 import type { ResourceType, ResourceData } from "@/data/types/resourceTypes";
 import { capitalizeFirstLetter } from "@/utils/resourceUtils";
 import { ITEMS_PER_PAGE } from "@/constants/resourceConstants";
+import { useSearchParams } from "react-router-dom";
 
 interface UseResourceManagerLogicProps {
   user_id: string;
@@ -16,13 +17,16 @@ interface UseResourceManagerLogicProps {
 export const useResourceManager = ({
   user_id,
 }: UseResourceManagerLogicProps) => {
-  const [resourceType, setResourceType] = useState<ResourceType>("words");
-  const [category, setCategory] = useState<string>("all");
-  const [difficulty, setDifficulty] = useState<string>("all");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const resourceType = (searchParams.get("type") as ResourceType) || "words";
+  const category = searchParams.get("category") || "all";
+  const difficulty = searchParams.get("difficulty") || "all";
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
+
   const [allResourcesWithProgress, setAllResourcesWithProgress] = useState<
     ResourceWithProgress<ResourceData>[]
   >([]);
-  const [currentPage, setCurrentPage] = useState(1);
 
   const capitalizedResourceType = capitalizeFirstLetter(resourceType);
 
@@ -46,7 +50,6 @@ export const useResourceManager = ({
       try {
         const result = await currentHook.getAllWithProgress(user_id);
         setAllResourcesWithProgress(result || []);
-        setCurrentPage(1);
       } catch (error) {
         console.error(`❌ Error loading ${resourceType} with progress:`, error);
         setAllResourcesWithProgress([]);
@@ -100,10 +103,6 @@ export const useResourceManager = ({
     });
   }, [allResourcesWithProgress, category, difficulty]);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [category, difficulty]);
-
   const paginatedResources = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
@@ -113,18 +112,46 @@ export const useResourceManager = ({
   const totalPages = Math.ceil(filteredResources.length / ITEMS_PER_PAGE);
 
   const handleResourceTypeChange = (type: ResourceType) => {
-    setResourceType(type);
-    setCurrentPage(1);
-    setCategory("all");
-    setDifficulty("all");
+    setSearchParams({
+      type: type,
+      category: "all",
+      difficulty: "all",
+      page: "1",
+    });
   };
 
   const handleCategoryChange = (newCategory: string) => {
-    setCategory((prev) => (prev === newCategory ? "all" : newCategory));
+    const nextCategory = category === newCategory ? "all" : newCategory;
+    setSearchParams(
+      (prev) => {
+        prev.set("category", nextCategory);
+        prev.set("page", "1");
+        return prev;
+      },
+      { replace: true }
+    );
   };
 
   const handleDifficultyChange = (newDifficulty: string) => {
-    setDifficulty((prev) => (prev === newDifficulty ? "all" : newDifficulty));
+    const nextDifficulty = difficulty === newDifficulty ? "all" : newDifficulty;
+    setSearchParams(
+      (prev) => {
+        prev.set("difficulty", nextDifficulty);
+        prev.set("page", "1");
+        return prev;
+      },
+      { replace: true }
+    );
+  };
+
+  const handlePageChange = (page: number) => {
+    setSearchParams(
+      (prev) => {
+        prev.set("page", page.toString());
+        return prev;
+      },
+      { replace: true }
+    );
   };
 
   return {
@@ -142,6 +169,6 @@ export const useResourceManager = ({
     handleResourceTypeChange,
     handleCategoryChange,
     handleDifficultyChange,
-    handlePageChange: setCurrentPage,
+    handlePageChange,
   };
 };

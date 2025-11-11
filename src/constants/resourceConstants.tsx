@@ -40,24 +40,27 @@ export const ITEMS_PER_PAGE = 10;
 
 export const levelConfig = {
   Beginner: {
-    title: "Beginner",
-    description: "You're building a great foundation. Keep practicing!",
+    title: "beginner",
+    description:
+      "The user has difficulty communicating clearly and using grammar correctly. The user frequently hesitates and pauses during conversations, which affects the coherence of the message. Requires considerable improvement.",
     icon: <FiBarChart className="h-6 w-6" />,
     color: "text-green-500",
     bg: "bg-green-50",
     border: "border-green-300",
   },
   Intermediate: {
-    title: "Intermediate",
-    description: "You're showing solid skills. Challenge yourself to improve!",
+    title: "intermediate",
+    description:
+      "The user manages to convey meaning in conversations, although they make moderate errors. The user handles communication with some pauses or hesitation. The user can maintain interaction and make themselves understood in most situations.",
     icon: <FiTrendingUp className="h-6 w-6" />,
     color: "text-yellow-500",
     bg: "bg-yellow-50",
     border: "border-yellow-300",
   },
   Advanced: {
-    title: "Advanced",
-    description: "Excellent work! You have a strong command of the language.",
+    title: "advanced",
+    description:
+      "The user communicates clearly and fluently, using grammar appropriately. The user maintains a natural rhythm in conversation, with few pauses, and links ideas coherently. The user shows a good command of the language.",
     icon: <FiAward className="h-6 w-6" />,
     color: "text-indigo-500",
     bg: "bg-indigo-50",

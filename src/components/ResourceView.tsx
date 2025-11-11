@@ -7,7 +7,7 @@ import type {
   ResourceCompleted,
   UserLevel,
 } from "@/services/evaluationApi/AudioEvaluationService";
-import { useAudioEvaluation } from "../hooks/evaluationApi/useAudioEvaluation";
+import { useAudioEvaluation } from "../hooks/evaluationHooks/useAudioEvaluation";
 import AppHeader from "./layout/AppHeader";
 import { FiArrowLeft } from "react-icons/fi";
 import AudioPlayer from "./AudioPlayer";
@@ -17,7 +17,7 @@ import { truncateText } from "@/utils/resourceUtils";
 import no_evaluation from "@/assets/images/no_evaluation.png";
 import LevelCard from "./LevelCard";
 import { mapDifficulty, transformEvaluation } from "@/utils/resourceUtils";
-import { useResource } from "@/hooks/useResource";
+import { useResource } from "@/hooks/resourceHooks/useResource";
 import { tagColors } from "@/constants/resourceConstants";
 import GetResourceContentView from "./layout/GetResourceContentView";
 
@@ -40,7 +40,7 @@ const ResourceView = () => {
   }, [resource]);
 
   const handleGoBack = () => {
-    navigate("/app/wstbysituation");
+    navigate(-1);
   };
   const audioEvaluation = useAudioEvaluation();
 

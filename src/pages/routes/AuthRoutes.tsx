@@ -1,11 +1,15 @@
 import { Routes, Route } from "react-router-dom";
-import { Login, Register } from "@/pages/auth";
+import { Login } from "@/pages/auth";
+import RegisterStepTwo from "@/components/auth/RegisterStepTwo";
+import RegisterStepOne from "@/components/auth/RegisterStepOne";
 
 function AuthRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      <Route path="/register" element={<RegisterStepOne />} />
+
+      <Route path="/complete-profile/:userId" element={<RegisterStepTwo />} />
     </Routes>
   );
 }

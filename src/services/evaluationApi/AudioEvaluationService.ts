@@ -126,11 +126,19 @@ export class AudioEvaluationService {
         reference_analysis: referenceAnalysisString,
       });
 
-      const response = await baseService.makeFileRequest<FlatEvaluation>(
+      const promiseLocal = baseService.makeFileRequest<FlatEvaluation>(
+        API_CONFIG.AUDIO_ANALYSIS_API.BASE_URL,
+        API_CONFIG.AUDIO_ANALYSIS_API.ENDPOINTS.tips_local,
+        formData
+      );
+
+      const promiseProduction = baseService.makeFileRequest<FlatEvaluation>(
         API_CONFIG.AUDIO_ANALYSIS_API.BASE_URL,
         API_CONFIG.AUDIO_ANALYSIS_API.ENDPOINTS.tips,
         formData
       );
+
+      const response = await Promise.any([promiseLocal, promiseProduction]);
 
       console.log("✅ Audio comparison response:", response.data);
       return response.data;

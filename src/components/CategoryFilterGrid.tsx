@@ -29,15 +29,15 @@ const CategoryFilterGrid: React.FC<CategoryFilterGridProps> = ({
   capitalizedResourceType,
 }) => (
   <div>
-    <label className="text-xl font-semibold mt-2 text-center lg:text-left xl:text-2xl">
+    <label className="text-xl font-semibold mt-2 text-center lg:text-left">
       <p>{capitalizedResourceType} By Situations</p>
-      <p className="text-lg text-gray-700 font-normal mt-3 lg:text-base xl:text-xl">
+      <p className="text-lg text-gray-700 font-normal mt-3">
         Practice with {resourceType} used in specific situations of life. Click
         a category to see more.
       </p>
     </label>
 
-    <div className="flex gap-4 my-6 w-full overflow-x-auto">
+    <div className="flex gap-6 p-4 w-full overflow-x-auto">
       {loading ? (
         <div className="w-full flex justify-center items-center col-span-full">
           <FaSpinner className="animate-spin text-4xl text-gray-400" />
@@ -48,7 +48,7 @@ const CategoryFilterGrid: React.FC<CategoryFilterGridProps> = ({
           <button
             key={name}
             onClick={() => onCategoryClick(name)}
-            className={`flex flex-col border border-gray-300 shadow-md shadow-black/30 items-start justify-between p-4 rounded-lg text-lg xl:text-xl text-left font-medium transition-all duration-200 h-60 xl:h-80 xl:w-60 flex-none ${
+            className={`flex flex-col border border-gray-300 items-start justify-between p-4 shadow-lg rounded-lg text-lg text-left font-medium transition-all duration-200 h-60 xl:h-70 xl:w-50 flex-none ${
               selectedCategory === name
                 ? "bg-[#8BA1E9] text-white"
                 : "bg-white text-black hover:bg-gray-100"
@@ -61,7 +61,7 @@ const CategoryFilterGrid: React.FC<CategoryFilterGridProps> = ({
                 <img
                   src={categoryImages[name]}
                   alt={name}
-                  className="w-32 h-32 object-contain xl:w-50 xl:h-50"
+                  className="w-32 h-32 object-contain xl:w-40 xl:h-40"
                 />
               </div>
             )}

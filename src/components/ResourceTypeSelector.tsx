@@ -18,8 +18,8 @@ const ResourceTypeSelector: React.FC<ResourceTypeSelectorProps> = ({
         onClick={() => onChange(type.value as ResourceType)}
         className={`relative pb-2 text-xl font-bold transition-colors duration-200 ${
           currentType === type.value
-            ? "text-black text-2xl xl:text-3xl"
-            : "text-gray-800/50 text-xl xl:text-2xl"
+            ? "text-black text-2xl"
+            : "text-gray-800/50 text-xl "
         }`}
       >
         {type.label}

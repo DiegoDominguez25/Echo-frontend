@@ -32,14 +32,18 @@ const Login: React.FC = () => {
 
       console.log("LoginPage: Datos recibidos de la API:", userData);
 
+      const accountResponse = await userService.getUserApplication(
+        userData.user_id
+      );
+      const accountData = accountResponse.data;
+
       login({
         id: userData.user_id,
+        name: accountData.username,
       });
 
       console.log("LoginPage: 'login(context)' llamado con:", {
         id: userData.user_id,
-        name: userData.name,
-        email: userData.email,
       });
       navigate("/app/wstbysituation");
     } catch (err: unknown) {

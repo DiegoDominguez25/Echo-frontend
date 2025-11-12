@@ -101,9 +101,9 @@ export function useGenericResource<T extends HasProps>(
   const getByIdWithProgress = useCallback(
     async (
       id: string,
-      userUid: string
+      user_id: string
     ): Promise<ResourceWithProgress<T> | null> => {
-      return handleAsync(() => service.getByIdWithProgress(id, userUid)).then(
+      return handleAsync(() => service.getByIdWithProgress(id, user_id)).then(
         (response) => response.data
       );
     },

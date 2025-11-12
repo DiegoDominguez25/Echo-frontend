@@ -54,19 +54,19 @@ const ResourceTable: React.FC<ResourceTableProps> = ({
   return (
     <div className="lg:mt-5">
       <div className="flex min-w-full">
-        <div className="w-1/12 px-6 py-4 text-left text-sm font-semibold xl:text-lg text-[#8BA1E9]">
+        <div className="w-1/12 px-6 py-4 text-left text-sm font-semibold text-[#8BA1E9]">
           Completed
         </div>
-        <div className="w-3/12 px-6 py-4 text-left text-sm font-semibold xl:text-lg text-[#B77777]">
+        <div className="w-3/12 px-6 py-4 text-left text-sm font-semibold text-[#B77777]">
           Description
         </div>
-        <div className="w-2/12 px-6 py-4 text-left text-sm font-semibold xl:text-lg text-[#A39E31]">
+        <div className="w-2/12 px-6 py-4 text-left text-sm font-semibold text-[#A39E31]">
           Situation
         </div>
-        <div className="w-2/12 px-6 py-4 text-left text-sm font-semibold xl:text-lg text-[#56AF88]">
+        <div className="w-2/12 px-6 py-4 text-left text-sm font-semibold text-[#56AF88]">
           Duration
         </div>
-        <div className="w-2/12 px-6 py-4 text-left text-sm font-semibold xl:text-lg text-[#8BA1E9]">
+        <div className="w-2/12 px-6 py-4 text-left text-sm font-semibold text-[#8BA1E9]">
           Words
         </div>
         <div className="w-2/12 px-6 py-4"></div>
@@ -105,13 +105,13 @@ const ResourceTable: React.FC<ResourceTableProps> = ({
                     <td className="w-3/12 px-6 py-4">
                       <div className="flex items-center gap-3">
                         <AiTwotoneSound className="text-gray-500" />
-                        <span className="font-semibold xl:text-lg text-gray-800">
+                        <span className="font-semibold text-gray-800">
                           {getDescription(resource)}
                         </span>
                       </div>
                     </td>
 
-                    <td className="w-2/12 px-6 py-4 font-medium xl:font-semibold xl:text-lg text-gray-800">
+                    <td className="w-2/12 px-6 py-4 font-medium text-gray-800">
                       {resource.categories?.find(
                         (cat) => cat.toLowerCase() === category.toLowerCase()
                       ) ||
@@ -119,18 +119,18 @@ const ResourceTable: React.FC<ResourceTableProps> = ({
                         "-"}
                     </td>
 
-                    <td className="w-2/12 px-6 py-4 font-medium xl:font-semibold xl:text-lg text-gray-800">
+                    <td className="w-2/12 px-6 py-4 font-medium text-gray-800">
                       {formatDuration(resource.resource.audio_duration)}
                     </td>
 
-                    <td className="w-2/12 px-6 py-4 font-medium xl:font-semibold xl:text-lg text-gray-800">
+                    <td className="w-2/12 px-6 py-4 font-medium text-gray-800">
                       {resource.resource.word_count} words
                     </td>
 
                     <td className="w-2/12 px-6 py-4">
                       <button
                         onClick={() => onViewResource(resource.resource.id)}
-                        className="flex items-center gap-2 text-gray-500 font-semibold xl:font-bold hover:text-blue-600"
+                        className="flex items-center gap-2 text-gray-500 font-semibold hover:text-blue-600"
                       >
                         See more <FaChevronRight size={12} />
                       </button>

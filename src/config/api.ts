@@ -2,7 +2,8 @@ export const API_CONFIG = {
   USE_MOCK_API: false,
 
   DATA_API: {
-    BASE_URL: "https://resources-api.lostresmodulos.shop",
+    BASE_URL:
+      /*"https://resources-api.lostresmodulos.shop"*/ "http://localhost:8001",
     ENDPOINTS: {
       resources: {
         sentences: {
@@ -26,7 +27,8 @@ export const API_CONFIG = {
   },
 
   USER_API: {
-    BASE_URL: "https://users-api.lostresmodulos.shop",
+    BASE_URL:
+      /*"https://users-api.lostresmodulos.shop"*/ "http://localhost:8003",
     ENDPOINTS: {
       createAccount: "/users/account",
       createUserApplication: "/users/user_application",
@@ -35,12 +37,13 @@ export const API_CONFIG = {
 
       getUserProgress: "/users/progress/completed/:user_id",
       getResourceProgress: "/users/progress/:user_id/:resource_uid",
-      createOrUpdateEvaluation: "/users/user_application/progress/:user_id",
+      createOrUpdateEvaluation: "/users/user_application/progress/:uid_user",
     },
   },
 
   AUDIO_ANALYSIS_API: {
-    BASE_URL: "https://feedback-api.lostresmodulos.shop",
+    BASE_URL:
+      /*"https://feedback-api.lostresmodulos.shop"*/ "http://localhost:8000",
     ENDPOINTS: {
       analyze: "/evaluation/analyze_audio",
       feedback: "/evaluation/evaluate_audio",

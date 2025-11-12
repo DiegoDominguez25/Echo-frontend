@@ -8,7 +8,7 @@ import AudioPlayer from "./AudioPlayer";
 
 interface AudioRecorderProps {
   resourceId: string;
-  userId: string;
+  user_id: string | undefined;
   duration: number;
   onEvaluationComplete: (
     evaluation: FlatEvaluation,
@@ -21,7 +21,7 @@ interface AudioRecorderProps {
 
 const AudioRecorder: React.FC<AudioRecorderProps> = ({
   resourceId,
-  userId,
+  user_id,
   duration,
   onEvaluationComplete,
   onSaveProgress,
@@ -40,11 +40,11 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
   const audioEvaluation = useAudioEvaluation();
 
   const handleEvaluateRecording = async () => {
-    if (!audioRecorder.audioBlob || !referenceAnalysis) return;
+    if (!audioRecorder.audioBlob || !referenceAnalysis || !user_id) return;
     const result = await audioEvaluation.evaluateAudio({
       audioBlob: audioRecorder.audioBlob,
       resourceId,
-      userId,
+      user_id,
       referenceAnalysis,
     });
 

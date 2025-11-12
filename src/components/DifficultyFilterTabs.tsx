@@ -15,9 +15,9 @@ const DifficultyFilterTabs: React.FC<DifficultyFilterTabsProps> = ({
   resourceType,
 }) => (
   <div className="flex flex-col items-center lg:items-start mt-8 w-full">
-    <label className="text-xl font-semibold text-center lg:text-left xl:text-2xl">
+    <label className="text-xl font-semibold text-center lg:text-left">
       <p>All {resourceType}</p>
-      <p className="text-lg text-gray-700 font-normal mt-3 lg:text-base xl:text-xl">
+      <p className="text-lg text-gray-700 font-normal mt-3">
         Browse all the {resourceType} we have. Click one to start practicing.
       </p>
     </label>
@@ -27,7 +27,7 @@ const DifficultyFilterTabs: React.FC<DifficultyFilterTabsProps> = ({
           <button
             key={level.value}
             onClick={() => onChange(level.value)}
-            className={`relative py-2 px-1 font-semibold transition-colors duration-200 xl:font-bold xl:text-xl ${
+            className={`relative py-2 px-1 font-semibold transition-colors duration-200 ${
               selectedDifficulty === level.value
                 ? "text-[#8BA1E9]"
                 : "text-black hover:text-gray-800"

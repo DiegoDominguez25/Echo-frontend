@@ -9,7 +9,7 @@ import type { AudioAnalysis } from "../../data/interfaces/ResourcesData";
 interface AudioEvaluationRequest {
   audioBlob: Blob;
   resourceId: string;
-  userId: string;
+  user_id: string;
   referenceAnalysis: AudioAnalysis;
 }
 
@@ -104,9 +104,18 @@ export const useAudioEvaluation = () => {
 
   const saveUserProgress = useCallback(
     async (
-      userId: string,
+      user_id: string | undefined,
       resourceCompleted: ResourceCompleted
     ): Promise<boolean> => {
+      if (!user_id) {
+        console.error("❌ Error saving user progress: userId is undefined.");
+        setState((prev) => ({
+          ...prev,
+          error: "User ID is missing. Cannot save progress.",
+          isSaving: false,
+        }));
+        return false;
+      }
       try {
         setState((prev) => ({
           ...prev,
@@ -114,10 +123,10 @@ export const useAudioEvaluation = () => {
           error: null,
         }));
 
-        console.log(`💾 Saving user progress: ${userId}`);
+        console.log(`💾 Saving user progress: ${user_id}`);
 
         await AudioEvaluationService.saveUserProgress(
-          userId,
+          user_id,
           resourceCompleted
         );
 

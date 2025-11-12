@@ -11,7 +11,7 @@ import { ITEMS_PER_PAGE } from "@/constants/resourceConstants";
 import { useSearchParams } from "react-router-dom";
 
 interface UseResourceManagerLogicProps {
-  user_id: string;
+  user_id: string | undefined;
 }
 
 export const useResourceManager = ({

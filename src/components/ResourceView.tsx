@@ -20,9 +20,10 @@ import { mapDifficulty, transformEvaluation } from "@/utils/resourceUtils";
 import { useResource } from "@/hooks/resourceHooks/useResource";
 import { tagColors } from "@/constants/resourceConstants";
 import GetResourceContentView from "./layout/GetResourceContentView";
+import { useAuth } from "@/hooks/useAuth";
 
 const ResourceView = () => {
-  const userId = "i7yrtI00NGt8FpTQD2gz";
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [userAudioAnalysis, setUserAudioAnalysis] =
     useState<AudioAnalysis | null>(null);
@@ -31,7 +32,7 @@ const ResourceView = () => {
   );
 
   const { resource, setResource, loading, error, type, resource_uid } =
-    useResource(userId);
+    useResource(user?.id);
 
   useEffect(() => {
     console.log("🔍 ResourceView state:", {
@@ -95,7 +96,7 @@ const ResourceView = () => {
     };
 
     const success = await audioEvaluation.saveUserProgress(
-      userId,
+      user?.id,
       progressData
     );
     if (success) {
@@ -226,7 +227,7 @@ const ResourceView = () => {
             <div className="w-full mt-5">
               <AudioRecorder
                 resourceId={resource_uid!}
-                userId="i7yrtI00NGt8FpTQD2gz"
+                user_id={user?.id}
                 duration={resource.resource.audio_duration}
                 onEvaluationComplete={handleEvaluationComplete}
                 onSaveProgress={handleSaveProgress}

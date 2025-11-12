@@ -7,7 +7,7 @@ import type { Sentences, Words, Texts } from "@/data/interfaces/ResourcesData";
 type ResourceType = "words" | "sentences" | "texts";
 type ResourceData = Words | Sentences | Texts;
 
-export const useResource = (userId: string) => {
+export const useResource = (user_id: string | undefined) => {
   const { type, resource_uid } = useParams<{
     type: string;
     resource_uid: string;
@@ -33,6 +33,10 @@ export const useResource = (userId: string) => {
 
   useEffect(() => {
     const loadResource = async () => {
+      if (!user_id || !resource_uid) {
+        setLoading(false);
+        return;
+      }
       try {
         setLoading(true);
         setError(null);
@@ -49,7 +53,7 @@ export const useResource = (userId: string) => {
         const currentHook = resourceHooks[resourceType];
         const resourceData = await currentHook.getByIdWithProgress(
           resource_uid,
-          "i7yrtI00NGt8FpTQD2gz"
+          user_id
         );
 
         setResource(resourceData);

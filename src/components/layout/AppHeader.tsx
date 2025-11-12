@@ -5,15 +5,10 @@ import logo from "@/assets/images/logo.png";
 import profileMock from "@/assets/images/profileMock.png";
 import flag from "@/assets/images/american-flag.png";
 import { FiLogOut } from "react-icons/fi";
-import type { UserApplicationData } from "@/data/interfaces/UserData";
-import { userService } from "@/services/api/user/userService";
 
 function AppHeader() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [profile, setProfile] = useState<UserApplicationData | null>(null);
-  const [profileLoading, setProfileLoading] = useState(true);
-  const { logout } = useAuth();
   const navigate = useNavigate();
 
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -33,39 +28,20 @@ function AppHeader() {
     };
   }, [dropdownRef]);
 
-  useEffect(() => {
-    if (authLoading || !user) {
-      return;
-    }
-
-    const fetchUserProfile = async () => {
-      try {
-        setProfileLoading(true);
-        const response = await userService.getUserApplication(user.id);
-        setProfile(response.data);
-      } catch (error) {
-        console.error("Error al cargar el perfil del usuario:", error);
-      } finally {
-        setProfileLoading(false);
-      }
-    };
-
-    fetchUserProfile();
-  }, [user, authLoading]);
-  if (authLoading || profileLoading) {
-    return <div>Loading profile...</div>;
-  }
-
-  if (!user || !profile) {
-    return <div>Error loading user data.</div>;
-  }
   const handleLogout = () => {
     logout();
     navigate("/auth/login/");
     setIsDropdownOpen(false);
   };
 
-  const profilePic = profileMock;
+  const profilePic =
+    profile &&
+    profile.profile_picture &&
+    profile.profile_picture !== "default.png"
+      ? profile.profile_picture
+      : profileMock;
+
+  const displayName = profile?.username || user?.name || "User";
 
   return (
     <div>
@@ -97,7 +73,7 @@ function AppHeader() {
                   <div className="px-3 py-2 border-b border-gray-200">
                     <p className="text-sm text-gray-500">Welcome,</p>
                     <p className="text-sm font-medium text-gray-900 truncate">
-                      {profile.username}
+                      {displayName}
                     </p>
                   </div>
 

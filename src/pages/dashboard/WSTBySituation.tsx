@@ -1,13 +1,10 @@
-// WSTBySituation.tsx
-
 import Layout from "@/components/layout/Layout";
 import ResourceManager from "@/components/ResourceManager";
 import { useAuth } from "@/hooks/useAuth";
 
 function WSTBySituation() {
-  const { user, loading } = useAuth();
-
-  if (loading || !user) {
+  const { user, authLoading } = useAuth();
+  if (authLoading || !user) {
     return (
       <Layout>
         <div>Loading...</div>
@@ -18,7 +15,7 @@ function WSTBySituation() {
   return (
     <div>
       <Layout>
-        <ResourceManager user_id={user.id} />
+        <ResourceManager />
       </Layout>
     </div>
   );

@@ -232,6 +232,15 @@ export class AudioEvaluationService {
     userId: string,
     resourceCompleted: ResourceCompleted
   ): Promise<void> {
+    console.log("--- DEBUG: Enviando Progreso a la API ---");
+    console.log(
+      "Endpoint:",
+      API_CONFIG.USER_API.ENDPOINTS.createOrUpdateEvaluation
+    );
+    console.log("User ID (param):", userId);
+    // Usamos JSON.stringify con 'null, 2' para "imprimir bonito" el objeto
+    console.log("Payload (body):", JSON.stringify(resourceCompleted, null, 2));
+    // --- FIN DEL BLOQUE DE DEBUG ---
     try {
       await baseService.makeUserRequest(
         API_CONFIG.USER_API.ENDPOINTS.createOrUpdateEvaluation,
@@ -243,7 +252,7 @@ export class AudioEvaluationService {
           body: JSON.stringify(resourceCompleted),
         },
         {
-          user_id: userId,
+          uid_user: userId,
         }
       );
     } catch (err) {

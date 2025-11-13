@@ -21,7 +21,7 @@ export const useResourceManager = ({
 
   const resourceType = (searchParams.get("type") as ResourceType) || "words";
   const category = searchParams.get("category") || "all";
-  const difficulty = searchParams.get("difficulty") || "all";
+  const difficulty = searchParams.get("difficulty") || "0";
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
 
   const [allResourcesWithProgress, setAllResourcesWithProgress] = useState<
@@ -115,43 +115,34 @@ export const useResourceManager = ({
     setSearchParams({
       type: type,
       category: "all",
-      difficulty: "all",
+      difficulty: "0",
       page: "1",
     });
   };
 
   const handleCategoryChange = (newCategory: string) => {
     const nextCategory = category === newCategory ? "all" : newCategory;
-    setSearchParams(
-      (prev) => {
-        prev.set("category", nextCategory);
-        prev.set("page", "1");
-        return prev;
-      },
-      { replace: true }
-    );
+    setSearchParams((prev) => {
+      prev.set("category", nextCategory);
+      prev.set("page", "1");
+      return prev;
+    });
   };
 
   const handleDifficultyChange = (newDifficulty: string) => {
     const nextDifficulty = difficulty === newDifficulty ? "all" : newDifficulty;
-    setSearchParams(
-      (prev) => {
-        prev.set("difficulty", nextDifficulty);
-        prev.set("page", "1");
-        return prev;
-      },
-      { replace: true }
-    );
+    setSearchParams((prev) => {
+      prev.set("difficulty", nextDifficulty);
+      prev.set("page", "1");
+      return prev;
+    });
   };
 
   const handlePageChange = (page: number) => {
-    setSearchParams(
-      (prev) => {
-        prev.set("page", page.toString());
-        return prev;
-      },
-      { replace: true }
-    );
+    setSearchParams((prev) => {
+      prev.set("page", page.toString());
+      return prev;
+    });
   };
 
   return {

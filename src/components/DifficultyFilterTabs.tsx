@@ -18,7 +18,8 @@ const DifficultyFilterTabs: React.FC<DifficultyFilterTabsProps> = ({
     <label className="text-xl font-semibold text-center lg:text-left">
       <p>All {resourceType}</p>
       <p className="text-lg text-gray-700 font-normal mt-3">
-        Browse all the {resourceType} we have. Click one to start practicing.
+        Browse all the {resourceType} we have. Choose a difficulty and click one
+        to start practicing
       </p>
     </label>
     <div className="relative w-full border-b border-gray-300 mt-4 pb-4">

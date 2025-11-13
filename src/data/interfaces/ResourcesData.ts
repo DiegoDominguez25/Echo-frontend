@@ -21,6 +21,11 @@ export interface Sentences {
   audio_duration: number;
 }
 
+export interface WordDefinitionEntry {
+  pos: string;
+  definitions: string[];
+}
+
 export interface Words {
   id: string;
   audio_url: string;
@@ -28,9 +33,9 @@ export interface Words {
   difficulty: string;
   categories: string[];
   word_count: number;
-  definitions: { [key: string]: string }[];
+  definitions: WordDefinitionEntry[];
   ipa: string;
-  translation: string;
+  translation: string[];
   audio_analysis: AudioAnalysis;
   audio_duration: number;
 }
@@ -42,7 +47,7 @@ export interface Texts {
   difficulty: string;
   categories: string[];
   word_count: number;
-  bookTitle: string;
+  book_title: string;
   translation: string;
   audio_analysis: AudioAnalysis;
   audio_duration: number;

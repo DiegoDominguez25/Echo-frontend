@@ -13,9 +13,26 @@ const GetResourceContentView = ({
   type,
 }: getResourceContentProps) => {
   const [isTranslated, setIsTranslated] = useState(false);
+  const [showDefinitions, setShowDefinitions] = useState(false);
 
   const handleTranslateToggle = () => {
-    setIsTranslated((prevState) => !prevState);
+    setIsTranslated((prevState) => {
+      const nextState = !prevState;
+      if (nextState) {
+        setShowDefinitions(false);
+      }
+      return nextState;
+    });
+  };
+
+  const handleDefinitionToggle = () => {
+    setShowDefinitions((prevState) => {
+      const nextState = !prevState;
+      if (nextState) {
+        setIsTranslated(false);
+      }
+      return nextState;
+    });
   };
 
   const renderContent = () => {
@@ -23,25 +40,83 @@ const GetResourceContentView = ({
       case "words": {
         const word = resource as Words;
 
-        return (
-          <div className="bg-white pb-30 px-4 pt-3 rounded-lg shadow-md border w-full border-gray-200">
-            <div className="flex gap-5 items-center pb-4 border-gray-200 mb-4">
-              <div className="flex items-center gap-2 text-gray-500 font-medium text-sm">
-                <span className="text-lg">🌐</span>
-                <span>{isTranslated ? "Spanish" : "English"}</span>
+        let contentToShow;
+        if (isTranslated) {
+          contentToShow = word.translation?.[0] || "No translation";
+        } else if (showDefinitions) {
+          if (!word.definitions || word.definitions.length === 0) {
+            contentToShow = "No definition available";
+          } else {
+            contentToShow = (
+              <div className="flex flex-col gap-3 text-base">
+                {" "}
+                {word.definitions.map((defGroup, index) => (
+                  <div key={index}>
+                    <h4 className="font-bold italic text-gray-600 capitalize">
+                      {defGroup.pos}
+                    </h4>
+
+                    <ul className="list-disc list-inside pl-2 text-gray-800 font-normal">
+                      {defGroup.definitions.map((defText, i) => (
+                        <li key={i} className="mt-1">
+                          {defText}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
-              <button
-                onClick={handleTranslateToggle}
-                className="text-sm font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-4 py-1.5 rounded-b-sm transition-colors"
-              >
-                {isTranslated ? "Show Original" : "Translate"}
-              </button>
+            );
+          }
+        } else {
+          contentToShow = word.text;
+        }
+
+        let langIndicator = "English";
+        let langEmoji = "🌐"; // O 🇬🇧
+        if (isTranslated) {
+          langIndicator = "Spanish";
+        } else if (showDefinitions) {
+          langIndicator = "Definition";
+          langEmoji = "📖";
+        }
+
+        return (
+          <div className="bg-white px-4 pt-3 rounded-lg shadow-md border w-full h-[15rem] border-gray-200">
+            <div className="flex flex-wrap gap-4 items-center pb-4 mb-4">
+              <div className="flex items-center gap-2 text-gray-500 font-medium text-sm">
+                <span className="text-lg">{langEmoji}</span>
+                <span>{langIndicator}</span>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={handleTranslateToggle}
+                  disabled={showDefinitions}
+                  className="text-sm font-semibold px-4 py-1.5 rounded-lg transition-colors text-blue-600 bg-blue-50                   disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isTranslated ? "Show Original" : "Translate"}
+                </button>
+
+                <button
+                  onClick={handleDefinitionToggle}
+                  disabled={isTranslated}
+                  className="text-sm font-semibold px-4 py-1.5 rounded-lg transition-colors text-blue-600 bg-blue-50 
+                  disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {showDefinitions ? "Hide Definition" : "Show Definition"}
+                </button>
+              </div>
             </div>
 
-            <div>
-              <p className="text-lg text-gray-800 leading-relaxed font-medium">
-                {isTranslated ? word.translation?.[0] : word.text}
-              </p>
+            <div
+              className={`leading-relaxed ${
+                showDefinitions
+                  ? "max-h-[10rem] overflow-y-scroll pr-2 pb-5"
+                  : "text-lg text-gray-800 leading-relaxed font-medium"
+              }`}
+            >
+              {!showDefinitions ? <p>{contentToShow}</p> : contentToShow}
             </div>
           </div>
         );
@@ -80,29 +155,69 @@ const GetResourceContentView = ({
 
       case "texts": {
         const text = resource as Texts;
-        const handleTranslateToggle = () => {
-          setIsTranslated((prevState) => !prevState);
-        };
+
+        let contentToShow;
+        if (isTranslated) {
+          contentToShow = text.translation || "No translation";
+        } else if (showDefinitions) {
+          const bookName = text.book_title || "Source not available";
+
+          contentToShow = (
+            <div className="text-base text-gray-700">
+              <span>Source: </span>
+              <span className="font-bold italic">{bookName}</span>
+            </div>
+          );
+        } else {
+          contentToShow = text.text;
+        }
+
+        let langIndicator = "English";
+        let langEmoji = "🌐";
+        if (isTranslated) {
+          langIndicator = "Spanish";
+        } else if (showDefinitions) {
+          langIndicator = "Book";
+          langEmoji = "📖";
+        }
 
         return (
-          <div className="bg-white pb-30 px-4 pt-3 rounded-lg shadow-md border w-full border-gray-200">
-            <div className="flex gap-5 items-center pb-4 border-gray-200 mb-4">
+          <div className="bg-white px-4 pt-3 rounded-lg shadow-md border w-full h-[15rem] border-gray-200 flex flex-col">
+            <div className="flex flex-wrap gap-4 items-center pb-4 mb-4 flex-shrink-0">
               <div className="flex items-center gap-2 text-gray-500 font-medium text-sm">
-                <span className="text-lg">🌐</span>
-                <span>{isTranslated ? "Spanish" : "English"}</span>
+                <span className="text-lg">{langEmoji}</span>
+                <span>{langIndicator}</span>
               </div>
-              <button
-                onClick={handleTranslateToggle}
-                className="text-sm font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-4 py-1.5 rounded-b-sm transition-colors"
-              >
-                {isTranslated ? "Show Original" : "Translate"}
-              </button>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={handleTranslateToggle}
+                  disabled={showDefinitions}
+                  className="text-sm font-semibold px-4 py-1.5 rounded-lg transition-colors text-blue-600 bg-blue-50
+                            disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isTranslated ? "Show Original" : "Translate"}
+                </button>
+
+                <button
+                  onClick={handleDefinitionToggle}
+                  disabled={isTranslated}
+                  className="text-sm font-semibold px-4 py-1.5 rounded-lg transition-colors text-blue-600 bg-blue-50
+                            disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {showDefinitions ? `Hide info` : `Show info `}
+                </button>
+              </div>
             </div>
 
-            <div>
-              <p className="text-lg text-gray-800 leading-relaxed font-medium">
-                {isTranslated ? text.translation : text.text}
-              </p>
+            <div
+              className={`leading-relaxed flex-1 overflow-y-auto ${
+                showDefinitions
+                  ? "pr-2 pb-5"
+                  : "text-lg text-gray-800 leading-relaxed font-medium"
+              }`}
+            >
+              {showDefinitions ? contentToShow : <p>{contentToShow}</p>}
             </div>
           </div>
         );

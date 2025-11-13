@@ -31,6 +31,11 @@ const RegisterStepOne: React.FC = () => {
         throw new Error("No se recibió el ID de documento del Paso 1.");
       }
 
+      localStorage.setItem(
+        "registrationState",
+        JSON.stringify({ email, name })
+      );
+
       navigate(`/auth/complete-profile/${tempUserId}`, {
         state: { email, name },
       });

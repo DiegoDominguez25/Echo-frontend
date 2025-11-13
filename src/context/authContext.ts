@@ -1,16 +1,16 @@
 import type { UserApplicationData } from "@/data/interfaces/UserData";
 import { createContext } from "react";
 
-export interface User {
+export interface AuthUser {
   id: string;
   name: string;
 }
 
 export interface AuthContextType {
-  user: User | null;
+  user: AuthUser | null;
   profile: UserApplicationData | null;
   isAuthenticated: boolean;
-  login: (userData: User) => void;
+  login: (userData: AuthUser, token: string) => void;
   logout: () => void;
   authLoading: boolean;
 }

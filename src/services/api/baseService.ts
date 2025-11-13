@@ -39,27 +39,34 @@ export class BaseService {
     return url;
   }
 
-  private getDefaultHeaders(
-    customHeaders?: Record<string, string>
-  ): Record<string, string> {
-    return {
-      Accept: "application/json",
-      ...customHeaders,
-    };
+  private _getAuthenticatedHeaders(customHeaders?: HeadersInit): Headers {
+    const headers = new Headers(customHeaders || {});
+
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+
+    return headers;
   }
 
   public async makeRequest<T>(
     baseUrl: string,
     endpoint: string,
-    options?: RequestInit,
+    options: RequestInit = {},
     params?: Record<string, string>
   ): Promise<ApiResponse<T>> {
     const url = this.buildUrl(baseUrl, endpoint, params);
 
-    const headers = this.getDefaultHeaders({
-      "Content-Type": "application/json",
-      ...(options?.headers as Record<string, string>),
-    });
+    const headers = this._getAuthenticatedHeaders(options.headers);
+
+    if (!headers.has("Accept")) {
+      headers.set("Accept", "application/json");
+    }
+    if (options.body && !headers.has("Content-Type")) {
+      headers.set("Content-Type", "application/json");
+    }
 
     const response = await fetch(url, {
       ...options,
@@ -67,9 +74,9 @@ export class BaseService {
     });
 
     if (!response.ok) {
-      throw new Error(
-        `API error! status: ${response.status} ${response.statusText}`
-      );
+      const errorData = await response.json().catch(() => null);
+      const detail = errorData?.detail || response.statusText;
+      throw new Error(`API error! status: ${response.status} - ${detail}`);
     }
 
     const data = options?.method === "DELETE" ? null : await response.json();
@@ -86,26 +93,22 @@ export class BaseService {
     formData: FormData,
     params?: Record<string, string>
   ): Promise<ApiResponse<T>> {
-    console.log("📤 FormData Debug:", {
-      endpoint: `${baseUrl}${endpoint}`,
-      formDataEntries: Array.from(formData.entries()).map(([key, value]) => ({
-        key,
-        valueType: typeof value,
-        valueSize: value instanceof File ? value.size : "N/A",
-        fileName: value instanceof File ? value.name : "N/A",
-        fileType: value instanceof File ? value.type : "N/A",
-      })),
-    });
-
     const url = this.buildUrl(baseUrl, endpoint, params);
+
+    const headers = this._getAuthenticatedHeaders();
 
     const response = await fetch(url, {
       method: "POST",
       body: formData,
+      headers: headers,
     });
 
     if (!response.ok) {
-      throw new Error(`File upload failed! status: ${response.status}`);
+      const errorData = await response.json().catch(() => null);
+      const detail = errorData?.detail || response.statusText;
+      throw new Error(
+        `File upload failed! status: ${response.status} - ${detail}`
+      );
     }
 
     const data = await response.json();

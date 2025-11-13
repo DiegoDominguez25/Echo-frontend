@@ -45,8 +45,8 @@ export interface UserApplicationResponse {
 export interface LoginResponse {
   message: string;
   user_id: string;
-  name: string;
-  email: string;
+  access_token: string;
+  token_type: string;
 }
 
 export interface UserApplicationData {

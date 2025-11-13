@@ -130,7 +130,7 @@ const ResourceTable: React.FC<ResourceTableProps> = ({
                     <td className="w-2/12 px-6 py-4">
                       <button
                         onClick={() => onViewResource(resource.resource.id)}
-                        className="flex items-center gap-2 text-gray-500 font-semibold hover:text-blue-600"
+                        className="flex items-center gap-2 hover:text-gray-500 font-semibold text-blue-600"
                       >
                         See more <FaChevronRight size={12} />
                       </button>

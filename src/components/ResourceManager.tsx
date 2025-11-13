@@ -58,15 +58,15 @@ const ResourceManager: React.FC = () => {
   };
 
   return (
-    <div className="px-5">
+    <div className="px-10 min-h-screen bg-white">
       <div className="lg:flex lg:flex-row lg:items-center lg:justify-between">
         <div className="lg:w-auto w-full">
           <div className="text-xl font-bold text-[#8BA1E9]">
             <h1>HI {profile?.username || user?.name || "USER"}.</h1>
-            <p className="text-4xl mt-3 lg:text-5xl">
+            <p className="text-4xl mt-4 lg:text-5xl">
               Explore all of our resources.
             </p>
-            <div className="mt-3 text-gray-500 font-semibold text-2xl flex flex-col gap-2">
+            <div className="mt-6 text-gray-500 font-semibold text-2xl flex flex-col gap-2">
               <p>Choose something you like. Practice, practice, practice.</p>
               <p>Get feedback and improve.</p>
             </div>

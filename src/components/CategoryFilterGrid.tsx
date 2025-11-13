@@ -33,7 +33,7 @@ const CategoryFilterGrid: React.FC<CategoryFilterGridProps> = ({
       <p>{capitalizedResourceType} By Situations</p>
       <p className="text-lg text-gray-700 font-normal mt-3">
         Practice with {resourceType} used in specific situations of life. Click
-        a category to see more.
+        a category to filter the table below.
       </p>
     </label>
 

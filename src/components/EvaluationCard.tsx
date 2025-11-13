@@ -67,7 +67,6 @@ const NoteSection: React.FC<{
     {isOpen && (
       <div className="pl-10 mt-2 space-y-2">
         {" "}
-        {/* Contenedor con espaciado vertical */}
         {tip?.map((item, index) => (
           <div key={index} className="flex items-start gap-2">
             <div className="w-1.5 h-1.5 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>

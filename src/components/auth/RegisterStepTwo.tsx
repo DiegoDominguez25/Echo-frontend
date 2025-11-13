@@ -1,19 +1,26 @@
-import React, { useState } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { userService } from "@/services/api/user/userService";
-import { useAuth } from "@/hooks/useAuth";
 import type { UserApplicationPayload } from "@/data/interfaces/UserData";
 import { FiCalendar, FiUser, FiUsers } from "react-icons/fi";
 import work from "@/assets/images/work.png";
 
 const RegisterStepTwo: React.FC = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   const { userId } = useParams<{ userId: string }>();
 
-  const location = useLocation();
-  const { email, name } = location.state || {};
+  const [registrationData, setRegistrationData] = useState<{
+    email: string | null;
+    name: string | null;
+  }>({ email: null, name: null });
+
+  useEffect(() => {
+    const storedState = localStorage.getItem("registrationState");
+    if (storedState) {
+      setRegistrationData(JSON.parse(storedState));
+    }
+  }, []);
 
   const [username, setUsername] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
@@ -21,6 +28,8 @@ const RegisterStepTwo: React.FC = () => {
 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const { email, name } = registrationData;
 
   if (!userId || !email || !name) {
     return (
@@ -66,11 +75,7 @@ const RegisterStepTwo: React.FC = () => {
         throw new Error("No final document ID received.");
       }
 
-      login({
-        id: userId,
-      });
-
-      navigate("/app/wstbysituation/");
+      navigate("/auth/login");
     } catch (err: unknown) {
       console.error(err);
       let errorMessage = "Error completing profile.";

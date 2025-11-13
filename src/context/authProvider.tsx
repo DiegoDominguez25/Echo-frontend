@@ -1,27 +1,34 @@
 import { useState, type ReactNode, useEffect } from "react";
-import type { AuthContextType, User } from "./authContext";
+import type { AuthContextType, AuthUser } from "./authContext";
 import { AuthContext } from "./authContext";
 import type { UserApplicationData } from "@/data/interfaces/UserData";
 import { userService } from "@/services/api/user/userService";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [profile, setProfile] = useState<UserApplicationData | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem("user");
-      if (storedUser) {
+      const storedToken = localStorage.getItem("token");
+
+      if (storedUser && storedToken) {
         setUser(JSON.parse(storedUser));
+      } else {
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
       }
     } catch (error) {
       console.error("Failed to parse user from localStorage", error);
       localStorage.removeItem("user");
+      localStorage.removeItem("token");
     } finally {
       setAuthLoading(false);
     }
   }, []);
+
   useEffect(() => {
     if (authLoading || !user) {
       setProfileLoading(false);
@@ -45,14 +52,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     fetchUserProfile();
   }, [user, authLoading]);
-  const login = (userData: User) => {
+
+  const login = (userData: AuthUser, token: string) => {
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("token", token);
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
   };
 
   const value: AuthContextType = {

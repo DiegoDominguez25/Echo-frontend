@@ -26,25 +26,27 @@ const Login: React.FC = () => {
     }
 
     try {
-      const response = await userService.login({ email, password });
+      const loginResponse = await userService.login({ email, password });
+      const { user_id, access_token } = loginResponse.data;
 
-      const userData = response.data;
+      if (!user_id || !access_token) {
+        throw new Error("Login response incomplete. Missing ID or Token.");
+      }
 
-      console.log("LoginPage: Datos recibidos de la API:", userData);
+      localStorage.setItem("token", access_token);
 
-      const accountResponse = await userService.getUserApplication(
-        userData.user_id
-      );
+      const accountResponse = await userService.getUserApplication(user_id);
       const accountData = accountResponse.data;
 
-      login({
-        id: userData.user_id,
+      const authUserData = {
+        id: user_id,
         name: accountData.username,
-      });
+      };
 
-      console.log("LoginPage: 'login(context)' llamado con:", {
-        id: userData.user_id,
-      });
+      login(authUserData, access_token);
+
+      console.log("LoginPage: 'login(context)' llamado con:", authUserData);
+
       navigate("/app/wstbysituation");
     } catch (err: unknown) {
       console.error(err);
@@ -57,6 +59,8 @@ const Login: React.FC = () => {
           errorMessage = response.data.detail;
         }
       }
+
+      localStorage.removeItem("token");
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -142,7 +146,7 @@ const Login: React.FC = () => {
       </div>
 
       <div className="lg:flex lg:w-1/2 justify-center items-center bg-gray-100/50 w-full min-h-screen">
-        <img src={logo} className="h-22 w-auto object-contain" />
+        <img src={logo} className="h-22 w-auto object-contain" alt="Logo" />
       </div>
     </div>
   );

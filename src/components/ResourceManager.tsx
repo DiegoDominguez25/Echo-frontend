@@ -54,7 +54,7 @@ const ResourceManager: React.FC = () => {
       <div className="lg:flex lg:flex-row lg:items-center lg:justify-between">
         <div className="lg:w-auto w-full">
           <div className="text-xl font-bold text-[#8BA1E9]">
-            <h1>HI {profile?.username || user?.name || "USER"}.</h1>
+            <p className="uppercase">HI {profile?.username || user?.name || "USER"}.</p>
             <p className="text-4xl mt-4 lg:text-5xl">
               Explore all of our resources.
             </p>

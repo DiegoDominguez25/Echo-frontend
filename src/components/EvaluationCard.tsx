@@ -31,7 +31,9 @@ const ScoreCircle: React.FC<{ label: string; score: number }> = ({
   score,
 }) => (
   <div className="flex flex-col items-center justify-center text-center w-20 h-20 bg-gray-100/60 rounded-full border border-gray-200/80">
-    <span className="text-xl font-bold text-gray-800">{score}</span>
+    {score == -1 ? 
+      <span className="text-xl font-bold text-gray-800">-</span> :
+      <span className="text-xl font-bold text-gray-800">{score}</span> }
     <span className="text-xs text-gray-500 mt-1">{label}</span>
   </div>
 );
@@ -157,9 +159,9 @@ const EvaluationCard: React.FC<EvaluationCardProps> = ({
               <ScoreCircle label="Clarity" score={evaluation.clarity_score} />
             </div>
             <div className="flex gap-4">
-              <ScoreCircle label="Tone" score={evaluation.rythm_score} />
+              <ScoreCircle label="Rythm" score={evaluation.rythm_score} />
               <ScoreCircle
-                label="Precision"
+                label="Articulation"
                 score={evaluation.articulation_score}
               />
             </div>

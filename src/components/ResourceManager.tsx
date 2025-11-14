@@ -51,14 +51,14 @@ const ResourceManager: React.FC = () => {
 
   return (
     <div className="px-10 min-h-screen bg-white">
-      <div className="lg:flex lg:flex-row lg:items-center lg:justify-between">
-        <div className="lg:w-auto w-full">
+      <div className="grid grid-cols-3">
+        <div className="lg:w-auto w-full col-span-3 md:col-span-2">
           <div className="text-xl font-bold text-[#8BA1E9]">
-            <p className="uppercase">HI {profile?.username || user?.name || "USER"}.</p>
+            <p className="uppercase pb-3">HI {profile?.username || user?.name || "USER"}.</p>
             <p className="text-4xl mt-4 lg:text-5xl">
               Explore all of our resources.
             </p>
-            <div className="mt-6 text-gray-500 font-semibold text-2xl flex flex-col gap-2">
+            <div className="mt-6 text-gray-500 font-normal text-md md:text-2xl flex flex-col gap-2">
               <p>Choose something you like. Practice, practice, practice.</p>
               <p>Get feedback and improve.</p>
             </div>
@@ -70,7 +70,7 @@ const ResourceManager: React.FC = () => {
           />
         </div>
 
-        <div className="hidden w-1/2 lg:flex justify-start items-center">
+        <div className="hidden md:block col-span-1">
           <img
             src={landing}
             className="h-80 w-auto object-contain"

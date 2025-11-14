@@ -14,16 +14,17 @@ const DifficultyFilterTabs: React.FC<DifficultyFilterTabsProps> = ({
   onChange,
   resourceType,
 }) => (
-  <div className="flex flex-col items-center lg:items-start mt-8 w-full">
-    <label className="text-xl font-semibold text-center lg:text-left">
+  <div className="flex flex-col items-center md:items-start w-full mt-5">
+    <label className="text-xl font-semibold text-center md:text-left">
       <p>All {resourceType}</p>
       <p className="text-lg text-gray-700 font-normal mt-3">
         Browse all the {resourceType} we have. Choose a difficulty and click one
         to start practicing
       </p>
     </label>
-    <div className="relative w-full border-b border-gray-300 mt-4 pb-4">
-      <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 mt-4">
+    <div className="w-full border-b border-gray-300">
+      <div className="h-full flex items-center justify-center md:justify-start 
+      gap-4 mt-4 overflow-x-auto overflow-y-hidden pb-4">
         {difficultyLevels.map((level) => (
           <button
             key={level.value}

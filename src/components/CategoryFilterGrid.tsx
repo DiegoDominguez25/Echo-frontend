@@ -28,8 +28,8 @@ const CategoryFilterGrid: React.FC<CategoryFilterGridProps> = ({
   resourceType,
   capitalizedResourceType,
 }) => (
-  <div>
-    <label className="text-xl font-semibold mt-2 text-center lg:text-left">
+  <div className="w-full mt-4 md:mt-2">
+    <label className="text-xl font-semibold text-center md:text-left">
       <p>{capitalizedResourceType} By Situations</p>
       <p className="text-lg text-gray-700 font-normal mt-3">
         Practice with {resourceType} used in specific situations of life. Click
@@ -37,7 +37,8 @@ const CategoryFilterGrid: React.FC<CategoryFilterGridProps> = ({
       </p>
     </label>
 
-    <div className="flex gap-6 p-4 w-full overflow-x-auto">
+    <div className="flex flex-row items-center justify-between mt-3 w-full 
+    overflow-x-auto">
       {loading ? (
         <div className="w-full flex justify-center items-center col-span-full">
           <FaSpinner className="animate-spin text-4xl text-gray-400" />
@@ -48,7 +49,11 @@ const CategoryFilterGrid: React.FC<CategoryFilterGridProps> = ({
           <button
             key={name}
             onClick={() => onCategoryClick(name)}
-            className={`flex flex-col border border-gray-300 items-start justify-between p-4 shadow-lg rounded-lg text-lg text-left font-medium transition-all duration-200 h-60 xl:h-70 xl:w-50 flex-none ${
+            className={`flex flex-col border border-gray-300  
+              p-4 shadow-lg rounded-lg text-lg text-left mb-3 
+              font-medium transition-all duration-200 w-40 h-60 md:w-45 xl:h-70 xl:w-50 
+              flex-shrink-0 mr-1
+              ${
               selectedCategory === name
                 ? "bg-[#8BA1E9] text-white"
                 : "bg-white text-black hover:bg-gray-100"

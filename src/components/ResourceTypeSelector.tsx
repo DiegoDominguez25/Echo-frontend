@@ -11,7 +11,7 @@ const ResourceTypeSelector: React.FC<ResourceTypeSelectorProps> = ({
   currentType,
   onChange,
 }) => (
-  <div className="flex flex-row gap-10 mt-10">
+  <div className="flex flex-row gap-10 mt-10 lg:mt-15">
     {resourceTypes.map((type) => (
       <button
         key={type.value}

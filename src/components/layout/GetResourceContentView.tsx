@@ -138,7 +138,7 @@ const GetResourceContentView = ({
               </div>
               <button
                 onClick={handleTranslateToggle}
-                className="text-sm font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-4 py-1.5 rounded-b-sm transition-colors"
+                className="text-sm font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-4 py-1.5 rounded-lg transition-colors"
               >
                 {isTranslated ? "Show Original" : "Translate"}
               </button>

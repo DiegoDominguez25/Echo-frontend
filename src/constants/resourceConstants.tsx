@@ -41,8 +41,17 @@ export const ITEMS_PER_PAGE = 10;
 export const levelConfig = {
   Beginner: {
     title: "beginner",
-    description:
-      "The user has difficulty communicating clearly and using grammar correctly. The user frequently hesitates and pauses during conversations, which affects the coherence of the message. Requires considerable improvement.",
+    description: [
+      "The user has difficulty communicating clearly and using grammar correctly.",
+      "The user frequently hesitates and pauses during conversations, which affects the coherence of the message.",
+      " Requires considerable improvement.",
+    ],
+    tips: [
+      "Clarity: Improve pronunciation and reduce grammar and vocabulary errors.",
+      "Articulation: Work on the pronunciation of syllables and sounds to achieve greater precision.",
+      "Rhythm: Reduce long pauses and filler words to maintain continuity.",
+      "Speed: Adjust speech speed so it is not too slow or too rushed.",
+    ],
     icon: <FiBarChart className="h-6 w-6" />,
     color: "text-green-500",
     bg: "bg-green-50",
@@ -50,8 +59,17 @@ export const levelConfig = {
   },
   Intermediate: {
     title: "intermediate",
-    description:
-      "The user manages to convey meaning in conversations, although they make moderate errors. The user handles communication with some pauses or hesitation. The user can maintain interaction and make themselves understood in most situations.",
+    description: [
+      "The user manages to convey meaning in conversations, although they make moderate errors.",
+      "The user handles communication with some pauses or hesitation.",
+      "The user can maintain interaction and make themselves understood in most situations.",
+    ],
+    tips: [
+      "Clarity: Refine grammar usage and expand vocabulary for greater precision.",
+      "Articulation: Improve intonation and diction to avoid confusion.",
+      "Rhythm: Better control pauses and maintain a more natural flow.",
+      "Speed: Adjust speed to better adapt to different communication contexts.",
+    ],
     icon: <FiTrendingUp className="h-6 w-6" />,
     color: "text-yellow-500",
     bg: "bg-yellow-50",
@@ -59,8 +77,17 @@ export const levelConfig = {
   },
   Advanced: {
     title: "advanced",
-    description:
-      "The user communicates clearly and fluently, using grammar appropriately. The user maintains a natural rhythm in conversation, with few pauses, and links ideas coherently. The user shows a good command of the language.",
+    description: [
+      "The user communicates clearly and fluently, using grammar appropriately.",
+      "The user maintains a natural rhythm in conversation, with few pauses, and links ideas coherently.",
+      "The user shows a good command of the language.",
+    ],
+    tips: [
+      "Clarity: Polish small details in pronunciation or expressions to achieve greater naturalness.",
+      "Articulation: Maintain consistency in the precision of more complex sounds.",
+      "Rhythm: Work on intonation and variations to sound more expressive and natural.",
+      "Speed: Adjust speed to focus on conveying the correct emotions and meanings.",
+    ],
     icon: <FiAward className="h-6 w-6" />,
     color: "text-indigo-500",
     bg: "bg-indigo-50",

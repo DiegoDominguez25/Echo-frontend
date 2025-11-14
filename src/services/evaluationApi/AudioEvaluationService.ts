@@ -86,8 +86,7 @@ export class AudioEvaluationService {
       formData.append("user_analysis", userAnalysisString);
       formData.append("reference_analysis", referenceAnalysisString);
 
-      // ✅ Debug FormData contents
-      console.log("📤 FormData contents:", {
+      console.log("FormData contents:", {
         entries: Array.from(formData.entries()).map(([key, value]) => ({
           key,
           valueType: typeof value,
@@ -100,10 +99,10 @@ export class AudioEvaluationService {
         formData
       );
 
-      console.log("✅ Audio comparison response:", response.data);
+      console.log("Audio comparison response:", response.data);
       return response.data;
     } catch (err) {
-      console.error("❌ Error comparing audio analyses:", err);
+      console.error("Error comparing audio analyses:", err);
       throw err;
     }
   }
@@ -112,39 +111,48 @@ export class AudioEvaluationService {
     userAnalysis: AudioAnalysis,
     referenceAnalysis: AudioAnalysis
   ): Promise<FlatEvaluation> {
+    const userAnalysisString = JSON.stringify(userAnalysis);
+    const referenceAnalysisString = JSON.stringify(referenceAnalysis);
+
+    const formData = new FormData();
+
+    formData.append("user_analysis", userAnalysisString);
+    formData.append("reference_analysis", referenceAnalysisString);
+
+    console.log("Data to send in formData:", {
+      user_analysis: userAnalysisString,
+      reference_analysis: referenceAnalysisString,
+    });
+
     try {
-      const userAnalysisString = JSON.stringify(userAnalysis);
-      const referenceAnalysisString = JSON.stringify(referenceAnalysis);
+      console.log("Try with ARLI IA ...");
+      const promiseProduction =
+        await baseService.makeFileRequest<FlatEvaluation>(
+          API_CONFIG.AUDIO_ANALYSIS_API.BASE_URL,
+          API_CONFIG.AUDIO_ANALYSIS_API.ENDPOINTS.tips,
+          formData
+        );
 
-      const formData = new FormData();
+      console.log("Success with ARLI IA:", promiseProduction.data);
+      return promiseProduction.data;
+    } catch (errProduction) {
+      console.warn("Error with ARLI IA:", errProduction);
+      console.log("Attempt 2: Falling back to 'tips' (production)...");
 
-      formData.append("user_analysis", userAnalysisString);
-      formData.append("reference_analysis", referenceAnalysisString);
+      try {
+        const promiseLocal = await baseService.makeFileRequest<FlatEvaluation>(
+          API_CONFIG.AUDIO_ANALYSIS_API.BASE_URL,
+          API_CONFIG.AUDIO_ANALYSIS_API.ENDPOINTS.tips_local,
+          formData
+        );
 
-      console.log("🔬 Datos que se enviarán en FormData:", {
-        user_analysis: userAnalysisString,
-        reference_analysis: referenceAnalysisString,
-      });
+        console.log("Success with 'tips' (local):", promiseLocal.data);
+        return promiseLocal.data;
+      } catch (errLocal) {
+        console.error("Both attempts failed (local and production):", errLocal);
 
-      const promiseLocal = baseService.makeFileRequest<FlatEvaluation>(
-        API_CONFIG.AUDIO_ANALYSIS_API.BASE_URL,
-        API_CONFIG.AUDIO_ANALYSIS_API.ENDPOINTS.tips_local,
-        formData
-      );
-
-      const promiseProduction = baseService.makeFileRequest<FlatEvaluation>(
-        API_CONFIG.AUDIO_ANALYSIS_API.BASE_URL,
-        API_CONFIG.AUDIO_ANALYSIS_API.ENDPOINTS.tips,
-        formData
-      );
-
-      const response = await Promise.any([promiseLocal, promiseProduction]);
-
-      console.log("✅ Audio comparison response:", response.data);
-      return response.data;
-    } catch (err) {
-      console.error("❌ Error comparing audio analyses:", err);
-      throw err;
+        throw errProduction;
+      }
     }
   }
 
@@ -152,7 +160,7 @@ export class AudioEvaluationService {
     evaluationRequest: AudioEvaluationRequest
   ): Promise<Evaluation> {
     try {
-      console.log("🚀 Starting complete audio evaluation flow...");
+      console.log("Starting complete audio evaluation flow...");
 
       const userAnalysis = await this.analyzeAudio({
         audioBlob: evaluationRequest.audioBlob,
@@ -160,7 +168,7 @@ export class AudioEvaluationService {
         userId: evaluationRequest.userId,
       });
 
-      console.log("✅ Step 1 completed: User audio analyzed");
+      console.log("Step 1 completed: User audio analyzed");
 
       const evaluation = await this.evaluateAnalysis(
         userAnalysis,
@@ -177,8 +185,8 @@ export class AudioEvaluationService {
         evaluationRequest.referenceAnalysis
       );
 
-      console.log("✅ Step 2 completed: Audio comparison evaluated");
-      console.log("🎉 Complete audio evaluation flow finished!");
+      console.log("Step 2 completed: Audio comparison evaluated");
+      console.log("Complete audio evaluation flow finished!");
 
       const completeEvaluation: Evaluation = {
         ...evaluation,
@@ -188,7 +196,7 @@ export class AudioEvaluationService {
 
       return completeEvaluation;
     } catch (err) {
-      console.error("❌ Error in complete audio evaluation:", err);
+      console.error("Error in complete audio evaluation:", err);
       throw err;
     }
   }
@@ -198,7 +206,7 @@ export class AudioEvaluationService {
     referenceAnalysis: AudioAnalysis
   ): Promise<UserLevel> {
     try {
-      console.log("🚀 Determining user level based on audio analysis...");
+      console.log("Determining user level based on audio analysis...");
 
       const userAnalysisString = JSON.stringify(userAnalysis);
       const referenceAnalysisString = JSON.stringify(referenceAnalysis);
@@ -219,11 +227,11 @@ export class AudioEvaluationService {
         formData
       );
 
-      console.log("✅ User level received:", response);
+      console.log("User level received:", response);
 
       return response.data.label;
     } catch (err) {
-      console.error("❌ Error determining user level:", err);
+      console.error("Error determining user level:", err);
       throw err;
     }
   }

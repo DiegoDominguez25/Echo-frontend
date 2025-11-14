@@ -93,7 +93,7 @@ const GetResourceContentView = ({
                 <button
                   onClick={handleTranslateToggle}
                   disabled={showDefinitions}
-                  className="text-sm font-semibold px-4 py-1.5 rounded-lg transition-colors text-blue-600 bg-blue-50                   disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="text-sm font-semibold px-4 py-1.5 rounded-lg transition-colors text-blue-600 bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isTranslated ? "Show Original" : "Translate"}
                 </button>
@@ -104,7 +104,7 @@ const GetResourceContentView = ({
                   className="text-sm font-semibold px-4 py-1.5 rounded-lg transition-colors text-blue-600 bg-blue-50 
                   disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {showDefinitions ? "Hide Definition" : "Show Definition"}
+                  {showDefinitions ? "Hide Definition" : "Definition"}
                 </button>
               </div>
             </div>
@@ -205,7 +205,7 @@ const GetResourceContentView = ({
                   className="text-sm font-semibold px-4 py-1.5 rounded-lg transition-colors text-blue-600 bg-blue-50
                             disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {showDefinitions ? `Hide info` : `Show info `}
+                  {showDefinitions ? `Hide info` : `More info `}
                 </button>
               </div>
             </div>

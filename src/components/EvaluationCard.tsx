@@ -94,11 +94,11 @@ const EvaluationCard: React.FC<EvaluationCardProps> = ({
   };
 
   const getOverallScoreFeedback = () => {
-    if (evaluation.total_score >= 35)
+    if (evaluation.total_score >= 80)
       return { text: "Excellent", color: "text-green-600" };
-    if (evaluation.total_score >= 25)
-      return { text: "Very Good", color: "text-green-500" };
-    if (evaluation.total_score >= 15)
+    if (evaluation.total_score >= 41)
+      return { text: "Very Good", color: "text-lime-400" };
+    if (evaluation.total_score >= 10)
       return { text: "Good", color: "text-yellow-600" };
     return { text: "Needs Practice", color: "text-red-500" };
   };
@@ -168,7 +168,7 @@ const EvaluationCard: React.FC<EvaluationCardProps> = ({
       </div>
 
       <div className="bg-white rounded-lg shadow-sm p-4 space-y-4">
-        <h3 className="font-semibold text-gray-800">Notes</h3>
+        <h3 className="font-semibold text-gray-800">Automatic Feedback</h3>
         <NoteSection
           icon={<FiZap className="text-red-500" />}
           title="Speed"

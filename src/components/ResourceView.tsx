@@ -9,7 +9,8 @@ import type {
 } from "@/services/evaluationApi/AudioEvaluationService";
 import { useAudioEvaluation } from "../hooks/evaluationHooks/useAudioEvaluation";
 import AppHeader from "./layout/AppHeader";
-import { FiArrowLeft } from "react-icons/fi";
+import { SiBilibili } from "react-icons/si";
+
 import AudioPlayer from "./AudioPlayer";
 import TranscriptView from "./TranscriptView";
 import EvaluationCard from "./EvaluationCard";
@@ -21,6 +22,7 @@ import { useResource } from "@/hooks/resourceHooks/useResource";
 import { tagColors } from "@/constants/resourceConstants";
 import GetResourceContentView from "./layout/GetResourceContentView";
 import { useAuth } from "@/hooks/useAuth";
+import { FiArrowLeft } from "react-icons/fi";
 
 const ResourceView = () => {
   const { user } = useAuth();
@@ -166,79 +168,94 @@ const ResourceView = () => {
   return (
     <div className="min-h-screen bg-white py-8">
       <AppHeader />
-      <div className="grid lg:grid-cols-2 gap-8 items-center px-10">
-        <div className="mb-8">
-          <button
-            onClick={handleGoBack}
-            className="flex items-center gap-2 text-gray-500 hover:text-gray-800 mb-4 text-sm"
-          >
-            <FiArrowLeft /> Back to resources
-          </button>
+      <div className="px-10 mb-8">
+        <button
+          onClick={handleGoBack}
+          className="flex items-center gap-2 text-gray-800 hover:text-black mb-4 text-lg font-medium"
+        >
+          <FiArrowLeft /> Back to resources
+        </button>
 
-          <div className="flex items-center flex-wrap gap-2 text-lg font-medium text-[#8BA1E9]">
-            <span>Resources</span>
-            <span>&gt;</span>
-            <span>
-              {type && (
-                <span>{type.charAt(0).toUpperCase() + type.slice(1)}</span>
-              )}
-            </span>
-            <span>&gt;</span>
-            <span>By Situation</span>
-            <span>&gt;</span>
-            <span>{resource.categories[0]}</span>
-            <span>&gt;</span>
-            <span>{mapDifficulty(resource.difficulty)}</span>
-          </div>
-
-          <h1 className="text-4xl font-bold text-indigo-400 mt-2">
-            {`${truncateText(resource.resource.text, 5)}`}
-          </h1>
-
-          <div className="flex flex-wrap items-center gap-3 my-4">
-            {resource.categories.map((category, index) => {
-              const color = tagColors[index % tagColors.length];
-              return (
-                <span
-                  key={index}
-                  className={`px-4 py-0.5 text-sm font-medium rounded-full border ${color.bg} ${color.border} ${color.text}`}
-                >
-                  {category}
-                </span>
-              );
-            })}
-          </div>
-
-          <div className=" flex flex-col bg-white rounded-lg mb-8">
-            <GetResourceContentView resource={resource.resource} type={type} />
-            {resource.resource.audio_url && (
-              <AudioPlayer
-                src={resource.resource.audio_url}
-                waveColor="#8BA1E9"
-                progressColor="#5575DE"
-              />
+        <div className="flex items-center flex-wrap gap-2 text-lg font-medium text-[#8BA1E9]">
+          <span>Resources</span>
+          <span>&gt;</span>
+          <span>
+            {type && (
+              <span>{type.charAt(0).toUpperCase() + type.slice(1)}</span>
             )}
-            <TranscriptView
-              transcript={
-                userAudioAnalysis?.transcription ||
-                resource.progress?.audio_analysis.transcription
-              }
-            />
-            <div className="w-full mt-5">
-              <AudioRecorder
-                resourceId={resource_uid!}
-                user_id={user?.id}
-                duration={resource.resource.audio_duration}
-                onEvaluationComplete={handleEvaluationComplete}
-                onSaveProgress={handleSaveProgress}
-                referenceAnalysis={resource?.resource?.audio_analysis}
-                attempts={resource.attempts || 0}
-              />
-            </div>
-          </div>
+          </span>
+          <span>&gt;</span>
+          <span>By Situation</span>
+          <span>&gt;</span>
+          <span className="capitalize">{resource.categories[0]}</span>
+          <span>&gt;</span>
+          <span>{mapDifficulty(resource.difficulty)}</span>
         </div>
+
+        <h1 className="text-4xl font-bold text-indigo-400 mt-2">
+          {`${truncateText(resource.resource.text, 5)}`}
+        </h1>
+
+        <div className="flex flex-wrap items-center gap-3 my-4">
+          {resource.categories.map((category, index) => {
+            const color = tagColors[index % tagColors.length];
+            return (
+              <span
+                key={index}
+                className={`px-4 py-0.5 text-sm font-medium rounded-full border ${color.bg} ${color.border} ${color.text}`}
+              >
+                {category}
+              </span>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-8 items-start px-10">
+        <div className=" flex flex-col bg-white rounded-lg mb-8">
+          <GetResourceContentView resource={resource.resource} type={type} />
+          {resource.resource.audio_url && (
+            <AudioPlayer
+              src={resource.resource.audio_url}
+              waveColor="#8BA1E9"
+              progressColor="#5575DE"
+            />
+          )}
+
+          <div className="w-full mt-5">
+            <AudioRecorder
+              resourceId={resource_uid!}
+              user_id={user?.id}
+              duration={resource.resource.audio_duration}
+              onEvaluationComplete={handleEvaluationComplete}
+              onSaveProgress={handleSaveProgress}
+              referenceAnalysis={resource?.resource?.audio_analysis}
+              attempts={resource.attempts || 0}
+            />
+          </div>
+          <TranscriptView
+            transcript={
+              userAudioAnalysis?.transcription ||
+              resource.progress?.audio_analysis.transcription
+            }
+          />
+        </div>
+
         <div>
-          {resource.evaluation ? (
+          {audioEvaluation.error ? (
+            <div className="bg-red-50 border flex flex-col border-red-200/80 rounded-xl p-4 space-y-4 items-center justify-center">
+              <div className="text-center">
+                <div className="text-red-500 text-6xl mb-4">⚠️</div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  Evaluation Failed
+                </h2>
+                <p className="text-gray-600 mb-6">{audioEvaluation.error}</p>
+                <button className="text-[#8BA1E9] px-4 py-3 rounded-md">
+                  Please try again
+                </button>
+              </div>
+            </div>
+          ) : resource.evaluation ? (
             <div className="min-w-3/4 justify-self-center">
               <EvaluationCard
                 evaluation={resource.evaluation}
@@ -252,7 +269,7 @@ const ResourceView = () => {
                   src={no_evaluation}
                   className="h-80 w-auto object-contain"
                 />
-                <div className="text-center mt-5 font-medium text-gray-500">
+                <div className="text-center mt-5 font-bold text-gray-600 text-xl">
                   <p>Submit your recording to get an evaluation.</p>
                 </div>
               </div>
@@ -268,10 +285,21 @@ const ResourceView = () => {
               />
             </div>
           ) : (
-            <div className={`rounded-xl p-6 shadow-sm mt-5`}>
-              <h3 className={`text-xl font-bold text-center w-full`}>
-                No user level estimated yet
-              </h3>
+            <div
+              className={`rounded-xl border p-6 shadow-sm bg-gray-100 border-gray-400 transition-all duration-300 mt-5`}
+            >
+              <div className="flex items-center gap-4">
+                <div
+                  className={`flex h-12 w-12 items-center justify-center rounded-full`}
+                >
+                  <SiBilibili className="h-6 w-6" />
+                </div>
+                <div className="flex items-center">
+                  <h3 className={`font-bold text-gray-600`}>
+                    No performance level estimated yet.
+                  </h3>
+                </div>
+              </div>
             </div>
           )}
         </div>

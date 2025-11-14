@@ -45,7 +45,7 @@ function AppHeader() {
 
   return (
     <div>
-      <header className="bg-white text-black p-4">
+      <header className="bg-white text-black py-4 px-8">
         <div className="grid grid-cols-3 items-center">
           <div className="justify-self-start">
             <img

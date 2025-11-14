@@ -16,7 +16,7 @@ const TranscriptView = ({ transcript }: { transcript?: string }) => {
       ) : (
         <div className="flex items-center justify-start h-10">
           <p className="text-gray-500 italic text-sm">
-            No transcription available yet.
+            Submit your audio to see its transcription.
           </p>
         </div>
       )}

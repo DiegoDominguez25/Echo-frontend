@@ -103,7 +103,7 @@ const AudioPlayer = ({ src, waveColor, progressColor }: AudioPlayerProps) => {
       <button
         onClick={togglePlayPause}
         disabled={isLoading || !!error}
-        className="text-[#5575DE] w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+        className="text-[#5575DE] w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-full hover:bg-blue-700 hover:text-white transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
       >
         {isPlaying ? <FaPause size={22} /> : <FaPlay size={22} />}
       </button>

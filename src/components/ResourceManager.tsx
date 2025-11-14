@@ -49,20 +49,12 @@ const ResourceManager: React.FC = () => {
     });
   };
 
-  const onDifficultyChangeWithScroll = (difficultyValue: string) => {
-    handleDifficultyChange(difficultyValue);
-    tableRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-  };
-
   return (
     <div className="px-10 min-h-screen bg-white">
       <div className="lg:flex lg:flex-row lg:items-center lg:justify-between">
         <div className="lg:w-auto w-full">
           <div className="text-xl font-bold text-[#8BA1E9]">
-            <h1>HI {profile?.username || user?.name || "USER"}.</h1>
+            <p className="uppercase">HI {profile?.username || user?.name || "USER"}.</p>
             <p className="text-4xl mt-4 lg:text-5xl">
               Explore all of our resources.
             </p>
@@ -99,7 +91,7 @@ const ResourceManager: React.FC = () => {
         <DifficultyFilterTabs
           counts={difficultyCounts}
           selectedDifficulty={difficulty}
-          onChange={onDifficultyChangeWithScroll}
+          onChange={handleDifficultyChange}
           resourceType={resourceType}
         />
       </div>

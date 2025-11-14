@@ -2,7 +2,8 @@ export const API_CONFIG = {
   USE_MOCK_API: false,
 
   DATA_API: {
-    BASE_URL: "https://resources-api.lostresmodulos.shop",
+    BASE_URL:
+      "https://resources-api.lostresmodulos.shop",
     ENDPOINTS: {
       resources: {
         sentences: {
@@ -26,7 +27,8 @@ export const API_CONFIG = {
   },
 
   USER_API: {
-    BASE_URL: "https://users-api.lostresmodulos.shop",
+    BASE_URL:
+      "https://users-api.lostresmodulos.shop",
     ENDPOINTS: {
       createAccount: "/users/account",
       createUserApplication: "/users/user_application",
@@ -40,7 +42,8 @@ export const API_CONFIG = {
   },
 
   AUDIO_ANALYSIS_API: {
-    BASE_URL: "https://feedback-api.lostresmodulos.shop",
+    BASE_URL:
+      "https://feedback-api.lostresmodulos.shop",
     ENDPOINTS: {
       analyze: "/evaluation/analyze_audio",
       feedback: "/evaluation/evaluate_audio",

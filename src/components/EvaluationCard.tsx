@@ -31,7 +31,9 @@ const ScoreCircle: React.FC<{ label: string; score: number }> = ({
   score,
 }) => (
   <div className="flex flex-col items-center justify-center text-center w-20 h-20 bg-gray-100/60 rounded-full border border-gray-200/80">
-    <span className="text-xl font-bold text-gray-800">{score}</span>
+    {score == -1 ? 
+      <span className="text-xl font-bold text-gray-800">-</span> :
+      <span className="text-xl font-bold text-gray-800">{score}</span> }
     <span className="text-xs text-gray-500 mt-1">{label}</span>
   </div>
 );
@@ -94,11 +96,11 @@ const EvaluationCard: React.FC<EvaluationCardProps> = ({
   };
 
   const getOverallScoreFeedback = () => {
-    if (evaluation.total_score >= 35)
+    if (evaluation.total_score >= 80)
       return { text: "Excellent", color: "text-green-600" };
-    if (evaluation.total_score >= 25)
-      return { text: "Very Good", color: "text-green-500" };
-    if (evaluation.total_score >= 15)
+    if (evaluation.total_score >= 41)
+      return { text: "Very Good", color: "text-lime-400" };
+    if (evaluation.total_score >= 10)
       return { text: "Good", color: "text-yellow-600" };
     return { text: "Needs Practice", color: "text-red-500" };
   };
@@ -157,9 +159,9 @@ const EvaluationCard: React.FC<EvaluationCardProps> = ({
               <ScoreCircle label="Clarity" score={evaluation.clarity_score} />
             </div>
             <div className="flex gap-4">
-              <ScoreCircle label="Tone" score={evaluation.rythm_score} />
+              <ScoreCircle label="Rythm" score={evaluation.rythm_score} />
               <ScoreCircle
-                label="Precision"
+                label="Articulation"
                 score={evaluation.articulation_score}
               />
             </div>
@@ -168,7 +170,7 @@ const EvaluationCard: React.FC<EvaluationCardProps> = ({
       </div>
 
       <div className="bg-white rounded-lg shadow-sm p-4 space-y-4">
-        <h3 className="font-semibold text-gray-800">Notes</h3>
+        <h3 className="font-semibold text-gray-800">Automatic Feedback</h3>
         <NoteSection
           icon={<FiZap className="text-red-500" />}
           title="Speed"

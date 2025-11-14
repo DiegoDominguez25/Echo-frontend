@@ -1,9 +1,9 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react"; // <-- Import 'useState'
 import { useAudioRecorder } from "@/hooks/evaluationHooks/useAudioRecorder";
 import { useAudioEvaluation } from "@/hooks/evaluationHooks/useAudioEvaluation";
 import type { FlatEvaluation } from "@/data/interfaces/UserData";
 import type { AudioAnalysis } from "../data/interfaces/ResourcesData";
-import { FiMic, FiSquare, FiLoader, FiSend } from "react-icons/fi";
+import { FiMic, FiSquare, FiLoader, FiSend, FiCheck } from "react-icons/fi";
 import AudioPlayer from "./AudioPlayer";
 
 interface AudioRecorderProps {
@@ -39,6 +39,9 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
   const audioRecorder = useAudioRecorder(recorderOptions);
   const audioEvaluation = useAudioEvaluation();
 
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaveSuccess, setIsSaveSuccess] = useState(false);
+
   const handleEvaluateRecording = async () => {
     if (!audioRecorder.audioBlob || !referenceAnalysis || !user_id) return;
     const result = await audioEvaluation.evaluateAudio({
@@ -53,12 +56,21 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
     }
   };
 
+  const handleSaveClick = async () => {
+    if (isSaveSuccess) return;
+    setIsSaving(true);
+    await onSaveProgress();
+    setIsSaving(false);
+    setIsSaveSuccess(true);
+  };
+
   const handleToggleRecording = () => {
     if (audioRecorder.isRecording) {
       audioRecorder.stopRecording();
     } else {
       audioEvaluation.clearEvaluation();
       audioRecorder.clearRecording();
+      setIsSaveSuccess(false);
       audioRecorder.startRecording();
     }
   };
@@ -99,8 +111,12 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
             : "Record yourself"}
         </p>
         <p className="text-xs text-gray-500">
-          {audioRecorder.formattedTime}
-          {attempts > 0 && ` • ${attempts} attempts`}
+          {audioRecorder.isRecording
+            ? audioRecorder.formattedTime
+            : audioRecorder.hasRecording
+            ? `${audioRecorder.recordingTime} seconds`
+            : `Up to ${Math.round(duration)} seconds`}{" "}
+          {attempts > 0 && `• ${attempts} attempts`}
         </p>
       </div>
 
@@ -122,52 +138,69 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
         </div>
       )}
 
-      <div className="flex justify-center">
+      <div className="flex flex-col items-center justify-center">
         {!hasEvaluation && audioRecorder.hasRecording && (
-          <button
-            onClick={handleEvaluateRecording}
-            disabled={audioEvaluation.isEvaluating}
-            className="bg-red-100 text-red-600 font-medium px-8 py-3 rounded-full hover:bg-red-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {audioEvaluation.isEvaluating ? (
-              <>
-                <FiLoader className="animate-spin" size={16} />
-                Evaluating...
-              </>
-            ) : (
-              "Get Evaluation"
+          <div className="flex flex-col items-center">
+            <button
+              onClick={handleEvaluateRecording}
+              disabled={audioEvaluation.isEvaluating}
+              className="bg-red-100 text-red-600 font-medium px-8 py-3 rounded-full hover:bg-red-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {audioEvaluation.isEvaluating ? (
+                <>
+                  <FiLoader className="animate-spin" size={16} />
+                  Evaluating...
+                </>
+              ) : (
+                "Get Evaluation"
+              )}
+            </button>
+
+            {audioEvaluation.isEvaluating && (
+              <p className="text-xs text-gray-500 mt-2">
+                This may take a few seconds...
+              </p>
             )}
-          </button>
+          </div>
         )}
 
         {hasEvaluation && (
-          <button
-            onClick={onSaveProgress}
-            disabled={audioEvaluation.isSaving}
-            className="bg-[#8BA1E9] text-white font-medium px-8 py-3 rounded-full hover:bg-[#6786eb] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {audioEvaluation.isSaving ? (
-              <>
-                <FiLoader className="animate-spin" size={16} />
-                Saving...
-              </>
-            ) : (
-              <>
-                <FiSend size={16} />
-                Save Result
-              </>
+          <div className="flex flex-col items-center">
+            <button
+              onClick={handleSaveClick}
+              disabled={isSaving || isSaveSuccess}
+              className={`font-medium px-8 py-3 rounded-full transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2 ${
+                isSaveSuccess
+                  ? "bg-green-100 text-green-700"
+                  : "bg-[#8BA1E9] text-white hover:bg-[#6786eb]"
+              }`}
+            >
+              {isSaving ? (
+                <>
+                  <FiLoader className="animate-spin" size={16} />
+                  Saving...
+                </>
+              ) : isSaveSuccess ? (
+                <>
+                  <FiCheck size={16} />
+                  Saved!
+                </>
+              ) : (
+                <>
+                  <FiSend size={16} />
+                  Save Result
+                </>
+              )}
+            </button>
+
+            {isSaveSuccess && (
+              <p className="text-sm text-green-600 font-medium mt-2">
+                Progress saved successfully!
+              </p>
             )}
-          </button>
+          </div>
         )}
       </div>
-
-      {hasEvaluation && (
-        <div className="text-center mt-4">
-          <p className="text-sm text-[#8BA1E9] font-medium">
-            ✓ Evaluation complete!
-          </p>
-        </div>
-      )}
     </div>
   );
 };

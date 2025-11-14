@@ -1,10 +1,9 @@
-import { Routes, Route } from "react-router-dom";
-import { Landing } from "@/pages/public";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 function PublicRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Landing />} />
+      <Route path="/" element={<Navigate to="/auth/login" replace />} />
     </Routes>
   );
 }

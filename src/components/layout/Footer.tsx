@@ -5,7 +5,7 @@ const Footer: React.FC = () => {
   return (
     <footer className="bg-white border-t border-gray-200 mt-10">
       <div className="container mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-3 gap-8">
           <div className="col-span-1 w-full">
             <div className="flex items-center">
               <img

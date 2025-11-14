@@ -96,7 +96,7 @@ function AppHeader() {
                 alt="Select language"
                 className="h-8 w-auto object-contain"
               />
-              <a className="font-bold relative py-2.5" href="#">
+              <a className="font-bold relative pr-5" href="#">
                 EN
               </a>
             </div>

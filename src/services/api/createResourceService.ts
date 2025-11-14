@@ -115,8 +115,12 @@ export function createResourceService<T extends HasProps>(
         const resourcesResponse = await this.getAll();
         const progressResponse = await userService.getUserProgress(userUid);
 
+        const userProgressData = Array.isArray(progressResponse.data)
+          ? progressResponse.data
+          : [];
+
         const resourcesWithProgress = resourcesResponse.data.map((resource) =>
-          resourceWithProgress(resource, progressResponse.data)
+          resourceWithProgress(resource, userProgressData)
         );
 
         return {
@@ -170,8 +174,12 @@ export function createResourceService<T extends HasProps>(
         const resourcesResponse = await this.getByDifficulty(difficulty);
         const progressResponse = await userService.getUserProgress(userUid);
 
+        const userProgressData = Array.isArray(progressResponse.data)
+          ? progressResponse.data
+          : [];
+
         const resourcesWithProgress = resourcesResponse.data.map((resource) =>
-          resourceWithProgress(resource, progressResponse.data)
+          resourceWithProgress(resource, userProgressData)
         );
 
         return {
@@ -203,9 +211,13 @@ export function createResourceService<T extends HasProps>(
 
         const progressResponse = await userService.getUserProgress(userUid);
 
+        const userProgressData = Array.isArray(progressResponse.data)
+          ? progressResponse.data
+          : [];
+
         const resourceWithProgressData = resourceWithProgress(
           resourceResponse.data,
-          progressResponse.data
+          userProgressData
         );
 
         return {

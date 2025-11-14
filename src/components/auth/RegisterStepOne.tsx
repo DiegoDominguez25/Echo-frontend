@@ -63,14 +63,14 @@ const RegisterStepOne: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50 justify-around">
-      <div className="flex items-center justify-center w-full p-8 lg:w-1/2">
+    <div className="grid grid-cols-1 md:grid-cols-3 min-h-screen bg-gray-50 justify-around px-8 py-8 md:py-0">
+      <div className="flex items-center justify-center w-full">
         <div className="w-full max-w-md p-10 space-y-6 bg-white rounded-xl shadow-xl">
           <h2 className="text-3xl font-bold text-center text-gray-900">
             Create your account
           </h2>
 
-          <div className="text-sm text-center text-gray-600">
+          <div className="text-md text-center text-gray-600">
             Already have an account?{" "}
             <Link
               to="/auth/login"
@@ -162,8 +162,8 @@ const RegisterStepOne: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex items-center justify-center lg:w-1/2">
-        <img src={landing} className="object-contain h-1/2 w-auto" />
+      <div className="flex col-span-2 w-full min-h-screen justify-center">
+        <img src={landing} className="object-contain h-full w-full md:p-20" />
       </div>
     </div>
   );

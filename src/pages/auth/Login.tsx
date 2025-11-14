@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { userService } from "@/services/api/user/userService";
 import { useAuth } from "@/hooks/useAuth";
-import logo from "@/assets/images/logo.png";
 import { FiLock, FiMail } from "react-icons/fi";
+import landing from "@/assets/images/landing.png";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -68,18 +68,20 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-around">
-      <div className="flex items-center justify-center w-full p-8 bg-white lg:w-1/2">
-        <div className="w-full max-w-md">
+    <div className="flex flex-col md:flex-row min-h-screen items-center justify-around">
+      <div className="flex items-center justify-center w-full p-8 bg-white min-h-screen col-span-1">
+        <div>
           <h2 className="text-3xl font-bold text-center text-gray-900">
-            Login
+            Welcome Back, <span className="text-[#8BA1E9]">Log In</span>
           </h2>
 
-          <div className="mt-4 text-sm text-center text-gray-600">
-            Don't have an account?
+          <div className="mt-4 text-md text-center text-gray-600 flex justify-center">
+            <div className="mr-2">
+              Don't have an account?
+            </div>
             <Link
               to="/auth/register"
-              className="font-medium text-[#8BA1E9] hover:text-blue-600"
+              className="font-medium text-md text-[#8BA1E9] hover:text-blue-600"
             >
               Register here
             </Link>
@@ -145,8 +147,8 @@ const Login: React.FC = () => {
         </div>
       </div>
 
-      <div className="lg:flex lg:w-1/2 justify-center items-center bg-gray-100/50 w-full min-h-screen">
-        <img src={logo} className="h-22 w-auto object-contain" alt="Logo" />
+      <div className="flex justify-center items-center bg-gray-100/50 min-h-screen p-20">
+          <img src={landing} className="w-full h-full object-contain" alt="Logo" />
       </div>
     </div>
   );
